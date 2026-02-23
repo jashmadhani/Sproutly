@@ -39,7 +39,7 @@ struct DashboardView: View {
     
     private var correctedAge: Int { childProfile.calculateCorrectedAge() }
     
-    /// Finds milestones relevant to the child's current developmnetal stage (closest age window).
+    /// Finds milestones relevant to the child's current developmental stage (closest age window).
     private var targetAgeMonth: Int {
         // Get all unique milestone ages
         let allAges = Set(milestones.map(\.ageMonth))
@@ -77,61 +77,63 @@ struct DashboardView: View {
         return Double(currentMonthCompleted) / Double(currentMonthTotal)
     }
     
+    /// Domain-level evaluations — computed centrally by the evaluator,
+    /// never inside individual view components.
+    private var domainEvaluations: [DomainEvaluation] {
+        DevelopmentEvaluator.evaluate(milestones: milestones, correctedAge: correctedAge)
+    }
+    
     // MARK: - Body
     
     var body: some View {
         ZStack(alignment: .top) {
             AmbientBackground(nightMode: theme.isNightMode)
             
-            if milestones.isEmpty {
-                // Loading / Empty State
-                VStack(spacing: 16) {
-                    ProgressView()
-                        .tint(theme.textSecondary)
-                    Text("Loading milestones...")
-                        .font(.subheadline)
-                        .foregroundStyle(theme.textSecondary)
+            ScrollView {
+                VStack(spacing: 24) {
+                    headerCard
+                    progressCard
+                    developmentOverview
+                    screeningCards
+                    lateExploringCards
+                    milestoneCategoryGroups
+                    supportAssistant
                 }
-                .frame(maxHeight: .infinity)
-            } else {
-                ScrollView {
-                    VStack(spacing: 20) {
-                        headerCard
-                        progressCard
-                        screeningCards
-                        lateExploringCards
-                        milestoneCategoryGroups
-                        supportAssistant
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 54)
-                    .padding(.bottom, 16)
-                    .background(
-                        GeometryReader { geo in
-                            Color.clear.preference(
-                                key: ScrollOffsetKey.self,
-                                value: geo.frame(in: .named("dashScroll")).minY
-                            )
-                        }
-                    )
-                }
-                .coordinateSpace(name: "dashScroll")
-                .onPreferenceChange(ScrollOffsetKey.self) { value in
-                    scrollOffset = value
-                }
-                .scrollDismissesKeyboard(.interactively)
-                .mask(
-                    VStack(spacing: 0) {
-                        LinearGradient(
-                            colors: [.clear, .black],
-                            startPoint: .top,
-                            endPoint: .bottom
+                .padding(.horizontal, 20)
+                .padding(.top, 54)
+                .padding(.bottom, 32)
+                .background(
+                    GeometryReader { geo in
+                        Color.clear.preference(
+                            key: ScrollOffsetKey.self,
+                            value: geo.frame(in: .named("dashScroll")).minY
                         )
-                        .frame(height: 80)
-                        Color.black
                     }
-                    .ignoresSafeArea()
                 )
+            }
+            .coordinateSpace(name: "dashScroll")
+            .onPreferenceChange(ScrollOffsetKey.self) { value in
+                scrollOffset = value
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .mask(
+                VStack(spacing: 0) {
+                    LinearGradient(
+                        colors: [.clear, .black],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 80)
+                    Color.black
+                }
+                .ignoresSafeArea()
+            )
+            .onAppear {
+                // Seed milestone data on every appear using the view's own
+                // model context. DataSeeder's guard prevents duplication.
+                // This is the primary seeding path — it uses the exact context
+                // that @Query observes, guaranteeing reactivity.
+                DataSeeder.seedIfNeeded(modelContext: modelContext)
             }
             
             // Compact sticky header
@@ -185,8 +187,8 @@ struct DashboardView: View {
     private var headerCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Hi, \(childProfile.name.isEmpty ? "little one" : childProfile.name) 🌱")
-                .font(.system(.title2, design: .rounded))
-                .fontWeight(.bold)
+                .font(.system(.title, design: .rounded))
+                .fontWeight(.semibold)
                 .foregroundStyle(theme.text)
             
             Text(childProfile.humanReadableAge)
@@ -202,7 +204,7 @@ struct DashboardView: View {
     // =========================================================================
     
     private var progressCard: some View {
-        HStack(spacing: 20) {
+        HStack(spacing: 24) {
             // Circular Ring
             MilestoneRingView(
                 progress: currentMonthProgress,
@@ -210,12 +212,12 @@ struct DashboardView: View {
                 totalCount: currentMonthTotal,
                 nightMode: theme.isNightMode
             )
-            .frame(width: 80, height: 80)
+            .frame(width: 100, height: 100)
             
             // Text Summary
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text("\(currentMonthCompleted) of \(currentMonthTotal)")
-                    .font(.title3.weight(.bold))
+                    .font(.title2.weight(.bold))
                     .foregroundStyle(theme.text)
                 
                 Text(milestoneSummaryText)
@@ -224,14 +226,14 @@ struct DashboardView: View {
             }
             Spacer()
         }
-        .padding(16)
+        .padding(20)
         .background(theme.card)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius, style: .continuous))
         .shadow(color: theme.text.opacity(theme.isNightMode ? 0.05 : 0.03), radius: 10, x: 0, y: 4)
     }
     
     private var milestoneSummaryText: String {
-        if currentMonthTotal == 0 { return "Loading steps..." }
+        if currentMonthTotal == 0 { return "No milestones for this stage" }
         if currentMonthCompleted == 0 { return "milestones to explore" }
         if currentMonthCompleted == currentMonthTotal { return "All milestones celebrated!" }
         return "milestones completed"
@@ -245,6 +247,68 @@ struct DashboardView: View {
         ScreeningCardView(
             correctedAge: correctedAge,
             nightMode: theme.isNightMode
+        )
+    }
+    
+    // =========================================================================
+    // MARK: - Development Overview
+    // =========================================================================
+    
+    private var developmentOverview: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Development Overview")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(theme.text)
+                .padding(.leading, 4)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(domainEvaluations) { evaluation in
+                        domainStatusCard(evaluation)
+                    }
+                }
+            }
+        }
+    }
+    
+    private func domainStatusCard(_ evaluation: DomainEvaluation) -> some View {
+        let statusColor = evaluation.status.color(for: theme.isNightMode)
+        
+        return VStack(alignment: .leading, spacing: 8) {
+            // Domain icon + status icon
+            HStack(spacing: 6) {
+                Image(systemName: evaluation.category.icon)
+                    .font(.system(size: 14))
+                    .foregroundStyle(evaluation.category.color(for: theme.isNightMode))
+                
+                Spacer()
+                
+                Image(systemName: evaluation.status.icon)
+                    .font(.system(size: 12))
+                    .foregroundStyle(statusColor)
+            }
+            
+            // Domain label
+            Text(evaluation.category.gentleLabel)
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(theme.text)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            
+            // Status label
+            Text(evaluation.status.rawValue)
+                .font(.caption2)
+                .foregroundStyle(statusColor)
+        }
+        .padding(12)
+        .frame(width: 128)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(statusColor.opacity(theme.isNightMode ? 0.08 : 0.06))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(statusColor.opacity(0.1), lineWidth: 1)
         )
     }
     
@@ -315,7 +379,7 @@ struct DashboardView: View {
         return VStack(spacing: 0) {
             // Category header
             Button {
-                withAnimation(.easeInOut(duration: 0.3)) {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
                     if isExpanded {
                         expandedCategories.remove(category.rawValue)
                     } else {
@@ -389,7 +453,7 @@ struct DashboardView: View {
             }
         }
         .warmCard(nightMode: theme.isNightMode)
-        .animation(.easeInOut(duration: 0.3), value: isExpanded)
+        .animation(.spring(response: 0.4, dampingFraction: 0.85), value: isExpanded)
     }
     
     // MARK: - Individual Milestone Row
@@ -416,8 +480,8 @@ struct DashboardView: View {
                 toggleMilestone(milestone)
             }
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 14)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(
@@ -466,7 +530,7 @@ struct DashboardView: View {
         celebrationOffset = 12
         
         // Fade in gently
-        withAnimation(.easeInOut(duration: 0.4)) {
+        withAnimation(.easeOut(duration: 0.35)) {
             celebrationOpacity = 1
             celebrationOffset = 0
         }

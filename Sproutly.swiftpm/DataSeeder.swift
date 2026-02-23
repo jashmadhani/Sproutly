@@ -12,7 +12,8 @@ import SwiftData
 /// and eight age windows (6mo–5yr). Based on CDC/AAP developmental guidelines.
 struct DataSeeder {
     
-    static func loadSampleData(modelContext: ModelContext) {
+    @MainActor
+    static func seedIfNeeded(modelContext: ModelContext) {
         let descriptor = FetchDescriptor<Milestone>()
         let existingCount = (try? modelContext.fetchCount(descriptor)) ?? 0
         guard existingCount == 0 else { return }
@@ -22,6 +23,14 @@ struct DataSeeder {
         
         for m in all { modelContext.insert(m) }
         try? modelContext.save()
+        // SwiftData autosave on the main context may not persist inserts reliably across all iOS 17 versions.
+        // Explicit save() ensures @Query sees the data immediately.
+    }
+    
+    /// Legacy entry point — routes to seedIfNeeded.
+    @MainActor
+    static func loadSampleData(modelContext: ModelContext) {
+        seedIfNeeded(modelContext: modelContext)
     }
     
     // MARK: - 6 Months

@@ -35,7 +35,7 @@ struct SettingsView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 54)
-                .padding(.bottom, 16)
+                .padding(.bottom, 32)
                 .background(
                     GeometryReader { geo in
                         Color.clear.preference(

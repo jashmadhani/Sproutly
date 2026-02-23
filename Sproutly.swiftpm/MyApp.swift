@@ -40,7 +40,8 @@ struct ContentView: View {
                 MainTabView()
                     .transition(.opacity)
                     .onAppear {
-                        DataSeeder.loadSampleData(modelContext: modelContext)
+                        // Secondary seeding path — covers re-onboard after data deletion.
+                        DataSeeder.seedIfNeeded(modelContext: modelContext)
                     }
             }
         }

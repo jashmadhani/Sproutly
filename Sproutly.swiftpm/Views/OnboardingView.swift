@@ -36,7 +36,11 @@ struct OnboardingView: View {
                     reassuranceStep.tag(2)
                     profileStep.tag(3)
                 }
+#if os(iOS)
                 .tabViewStyle(.page(indexDisplayMode: .never))
+#else
+                .tabViewStyle(.automatic)
+#endif
                 
                 navigationButtons
             }
@@ -254,7 +258,9 @@ private extension OnboardingView {
                                 Text("\(week) weeks").tag(week)
                             }
                         }
+#if os(iOS)
                         .pickerStyle(.wheel)
+#endif
                         .frame(height: 100)
                     }
                     .transition(.opacity.combined(with: .move(edge: .top)))
@@ -307,8 +313,10 @@ private extension OnboardingView {
         HStack(spacing: 16) {
             if step > 0 {
                 Button {
+#if os(iOS)
                     let generator = UIImpactFeedbackGenerator(style: .light)
                     generator.impactOccurred()
+#endif
                     withAnimation(.spring(response: 0.4)) { step -= 1 }
                 } label: {
                     HStack(spacing: 6) {
@@ -323,8 +331,10 @@ private extension OnboardingView {
             Spacer()
             
             Button {
+#if os(iOS)
                 let generator = UIImpactFeedbackGenerator(style: .light)
                 generator.impactOccurred()
+#endif
                 
                 if step == totalSteps - 1 {
                     withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {

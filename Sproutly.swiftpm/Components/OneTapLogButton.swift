@@ -18,9 +18,10 @@ struct OneTapLogButton: View {
     
     var body: some View {
         Button {
-            // Gentle haptic
+#if os(iOS)
             let generator = UIImpactFeedbackGenerator(style: .light)
             generator.impactOccurred()
+#endif
             
             withAnimation(.spring(response: 0.25, dampingFraction: 0.6)) {
                 isPressed = true

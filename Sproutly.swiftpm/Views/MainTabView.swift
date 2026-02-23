@@ -58,8 +58,10 @@ struct MainTabView: View {
         HStack(spacing: 0) {
             ForEach(Tab.allCases, id: \.self) { tab in
                 Button {
+#if os(iOS)
                     let generator = UIImpactFeedbackGenerator(style: .light)
                     generator.impactOccurred()
+#endif
                     withAnimation(.easeInOut(duration: 0.25)) {
                         selectedTab = tab
                     }
@@ -153,7 +155,7 @@ struct ReflectView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 54)
-                .padding(.bottom, 16)
+                .padding(.bottom, 32)
                 .background(
                     GeometryReader { geo in
                         Color.clear.preference(
@@ -284,7 +286,7 @@ struct ReflectView: View {
                                 .foregroundStyle(theme.text)
                             
                             if let date = milestone.dateCompleted {
-                                Text(date, style: .relative)
+                                Text(date, format: .dateTime.month(.abbreviated).day())
                                     .font(.caption2)
                                     .foregroundStyle(theme.textSecondary)
                             }
