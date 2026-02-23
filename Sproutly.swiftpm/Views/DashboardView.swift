@@ -41,14 +41,14 @@ struct DashboardView: View {
     
     /// Finds milestones relevant to the child's current developmental stage (closest age window).
     private var targetAgeMonth: Int {
-        // Get all unique milestone ages
+        // If query hasn't populated yet, return a safe default
+        guard !milestones.isEmpty else { return 6 }
         let allAges = Set(milestones.map(\.ageMonth))
-        // Find closest age to correctedAge
         return allAges.min(by: { abs($0 - correctedAge) < abs($1 - correctedAge) }) ?? 6
     }
     
     private var currentMonthMilestones: [Milestone] {
-        let target = uiTargetAge // Use computed property for stability
+        let target = uiTargetAge
         return milestones.filter { $0.ageMonth == target }
     }
     
@@ -57,11 +57,11 @@ struct DashboardView: View {
     }
     
     private var pastMilestones: [Milestone] {
-        milestones.filter { $0.ageMonth < uiTargetAge }
+        return milestones.filter { $0.ageMonth < uiTargetAge }
     }
     
     private var futureMilestones: [Milestone] {
-        milestones.filter { $0.ageMonth > uiTargetAge }
+        return milestones.filter { $0.ageMonth > uiTargetAge }
     }
     
     private var currentMonthCompleted: Int {
@@ -91,6 +91,10 @@ struct DashboardView: View {
             
             ScrollView {
                 VStack(spacing: 24) {
+                    #if DEBUG
+                    Text("DEBUG: Query count: \(milestones.count), Seeded: \(hasSeededData), targetAge: \(uiTargetAge)")
+                        .foregroundStyle(.red)
+                    #endif
                     headerCard
                     progressCard
                     developmentOverview
@@ -128,13 +132,6 @@ struct DashboardView: View {
                 }
                 .ignoresSafeArea()
             )
-            .onAppear {
-                // Seed milestone data on every appear using the view's own
-                // model context. DataSeeder's guard prevents duplication.
-                // This is the primary seeding path — it uses the exact context
-                // that @Query observes, guaranteeing reactivity.
-                DataSeeder.seedIfNeeded(modelContext: modelContext)
-            }
             
             // Compact sticky header
             VStack {
@@ -561,38 +558,8 @@ struct DashboardView: View {
 // MARK: - Preview
 
 #Preview {
-    let container: ModelContainer = {
-        let container = try! ModelContainer(
-            for: Milestone.self,
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-        )
-        let context = container.mainContext
-        
-        let samples: [(String, String, Int, Bool)] = [
-            ("Sits with support", "Gross Motor", 6, true),
-            ("Rolls over in both directions", "Gross Motor", 6, false),
-            ("Rakes small objects toward self", "Fine Motor", 6, true),
-            ("Babbles chains of consonants", "Language", 6, false),
-            ("Explores objects by mouthing", "Cognitive", 6, true),
-            ("Recognizes familiar faces", "Social-Emotional", 6, false),
-        ]
-        for (title, category, age, done) in samples {
-            let m = Milestone(
-                title: title,
-                category: category,
-                ageMonth: age,
-                isCompleted: done,
-                dateCompleted: done ? Date() : nil,
-                tips: "Every little moment matters."
-            )
-            context.insert(m)
-        }
-        
-        return container
-    }()
-    
     DashboardView()
         .environment(ChildProfile())
         .environment(ThemeManager())
-        .modelContainer(container)
+        .modelContainer(previewContainer)
 }

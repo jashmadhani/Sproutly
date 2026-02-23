@@ -16,15 +16,27 @@ struct DataSeeder {
     static func seedIfNeeded(modelContext: ModelContext) {
         let descriptor = FetchDescriptor<Milestone>()
         let existingCount = (try? modelContext.fetchCount(descriptor)) ?? 0
-        guard existingCount == 0 else { return }
         
-        let all = sixMonth + nineMonth + twelveMonth + eighteenMonth
-            + twentyFourMonth + thirtySixMonth + fortyEightMonth + sixtyMonth
-        
-        for m in all { modelContext.insert(m) }
-        try? modelContext.save()
-        // SwiftData autosave on the main context may not persist inserts reliably across all iOS 17 versions.
-        // Explicit save() ensures @Query sees the data immediately.
+        // If we don't have exactly the complete set of 60 milestones, the DB is empty or corrupted.
+        if existingCount < 60 {
+            // Manually fetch and delete any lingering entries to avoid corruption
+            if let allExisting = try? modelContext.fetch(descriptor) {
+                for m in allExisting {
+                    modelContext.delete(m)
+                }
+            }
+            
+            let all = sixMonth + nineMonth + twelveMonth + eighteenMonth
+                + twentyFourMonth + thirtySixMonth + fortyEightMonth + sixtyMonth
+            
+            for m in all { modelContext.insert(m) }
+            
+            do {
+                try modelContext.save()
+            } catch {
+                print("Failed to save seeded milestones: \(error.localizedDescription)")
+            }
+        }
     }
     
     /// Legacy entry point — routes to seedIfNeeded.

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 /// Emotionally supportive onboarding flow — under 60 seconds.
 /// Four gentle screens: Welcome, How It Works, Reassurance, Profile Setup.
@@ -385,4 +386,5 @@ private extension OnboardingView {
     OnboardingView()
         .environment(ChildProfile())
         .environment(ThemeManager())
+        .modelContainer(previewContainer)
 }

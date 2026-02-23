@@ -8,6 +8,22 @@
 import SwiftUI
 import SwiftData
 
+/// Synchronously initialized and seeded app container.
+/// Fixes the iOS 17 SwiftData bug where programmatic data seeding triggers after @Query evaluates,
+/// preventing the UI from rendering "0 of 0" on the first launch.
+@MainActor
+let sharedAppContainer: ModelContainer = {
+    do {
+        let schema = Schema([Milestone.self])
+        let config = ModelConfiguration(isStoredInMemoryOnly: false)
+        let container = try ModelContainer(for: schema, configurations: [config])
+        DataSeeder.seedIfNeeded(modelContext: container.mainContext)
+        return container
+    } catch {
+        fatalError("Failed to build app container: \(error)")
+    }
+}()
+
 @main
 struct MyApp: App {
     @State private var childProfile = ChildProfile.load()
@@ -20,16 +36,14 @@ struct MyApp: App {
                 .environment(themeManager)
                 .preferredColorScheme(themeManager.preferredColorScheme)
         }
-        .modelContainer(for: Milestone.self)
+        .modelContainer(sharedAppContainer)
     }
 }
 
 /// Root view that routes between Onboarding and the Main Tab View.
-/// No instructions view — onboarding covers everything in 4 screens.
 struct ContentView: View {
     @Environment(ChildProfile.self) private var childProfile
     @Environment(ThemeManager.self) private var theme
-    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         Group {
@@ -39,10 +53,6 @@ struct ContentView: View {
             } else {
                 MainTabView()
                     .transition(.opacity)
-                    .onAppear {
-                        // Secondary seeding path — covers re-onboard after data deletion.
-                        DataSeeder.seedIfNeeded(modelContext: modelContext)
-                    }
             }
         }
         .animation(.easeInOut(duration: 0.5), value: childProfile.hasCompletedOnboarding)

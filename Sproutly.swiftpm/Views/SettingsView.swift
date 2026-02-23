@@ -22,7 +22,7 @@ struct SettingsView: View {
     private var isCompactHeader: Bool { scrollOffset < -10 }
     
     var body: some View {
-        ZStack(alignment: .top) {
+        ZStack(alignment: .top) {   
             AmbientBackground(nightMode: theme.isNightMode)
             
             ScrollView {
@@ -301,4 +301,5 @@ struct SettingsView: View {
     SettingsView()
         .environment(ChildProfile())
         .environment(ThemeManager())
+        .modelContainer(previewContainer)
 }
