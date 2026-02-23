@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Xcode user data
+DerivedData/
+xcuserdata/
+*.xcuserstate
+
+# Index / database files
+*.mdb
+
+# Logs
+*.log
