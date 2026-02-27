@@ -82,7 +82,7 @@ struct MilestonesView: View {
             completionNoteSheet(for: milestone)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
-                .presentationBackground(Color.white)
+                .presentationBackground(theme.isNightMode ? Theme.nightCard : Color.white)
         }
     }
 
