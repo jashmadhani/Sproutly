@@ -15,28 +15,11 @@ struct GrowthInsightsView: View {
     @State private var expandedSection: String? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
             // Section header
             Label("Growth Insights", systemImage: "lightbulb.fill")
                 .font(.callout.weight(.semibold))
                 .foregroundStyle(Theme.accentBlue(for: nightMode))
-
-            // Tip row — always visible, acts as lead content
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "leaf.fill")
-                    .font(.system(size: 14))
-                    .foregroundStyle(Theme.growthGreen(for: nightMode))
-                    .frame(width: 20)
-
-                Text("Children learn best through everyday moments — bath time, walks, and shared meals are all opportunities for gentle growth.")
-                    .font(.subheadline)
-                    .foregroundStyle(Theme.textSecondary(for: nightMode))
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(.vertical, 4)
-
-            Divider()
-                .opacity(0.3)
 
             // Collapsible educational rows
             insightRow(
@@ -59,7 +42,7 @@ struct GrowthInsightsView: View {
             insightRow(
                 id: "surveillance",
                 icon: "eye.fill",
-                title: "Observation vs Screening",
+                title: "Surveillance vs Screening",
                 body: """
                     Developmental surveillance is the ongoing, gentle observation that happens naturally — noticing what your child can do at each age. This is what Sproutly helps with.
 
@@ -84,7 +67,7 @@ struct GrowthInsightsView: View {
 
             insightRow(
                 id: "when",
-                icon: "stethoscope",
+                icon: "person.badge.plus",
                 title: "When to Ask",
                 body: """
                     Trust your instincts. You know your child best. Some situations where a conversation with your pediatrician can be helpful:
@@ -142,7 +125,7 @@ struct GrowthInsightsView: View {
                     .transition(.opacity)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 2)
         .clipped()
         .animation(.spring(response: 0.35, dampingFraction: 1.0), value: expandedSection)
     }
