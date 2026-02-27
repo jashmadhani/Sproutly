@@ -162,41 +162,44 @@ private extension OnboardingView {
 
     // Step 2: How It Works — Observe → Log → Reflect
     var howItWorksStep: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                Spacer(minLength: 24)
+        VStack(spacing: 20) {
+            Spacer(minLength: 8)
 
-                Text("How Sproutly Works")
-                    .font(.system(.title2, design: .rounded))
-                    .fontWeight(.bold)
-                    .foregroundStyle(theme.text)
+            Text("How Sproutly Works")
+                .font(.system(.title2, design: .rounded))
+                .fontWeight(.bold)
+                .foregroundStyle(theme.text)
 
-                VStack(spacing: 16) {
-                    onboardingPill(
-                        icon: "eye",
-                        title: "Observe",
-                        subtitle: "Notice the little things your child does each day"
-                    )
+            VStack(spacing: 12) {
+                howItWorksRow(
+                    icon: "eye",
+                    title: "Observe",
+                    subtitle: "Notice the little things your child does each day"
+                )
 
-                    onboardingPill(
-                        icon: "square.and.pencil",
-                        title: "Log",
-                        subtitle: "Tap once to record a milestone — it takes a second"
-                    )
+                howItWorksRow(
+                    icon: "square.and.pencil",
+                    title: "Log",
+                    subtitle: "Tap once to record a milestone — it takes a second"
+                )
 
-                    onboardingPill(
-                        icon: "heart.text.square",
-                        title: "Reflect",
-                        subtitle: "Look back on your journey with warmth"
-                    )
-                }
-                .padding(.horizontal, 24)
-
-                Spacer(minLength: 24)
+                howItWorksRow(
+                    icon: "heart.text.square",
+                    title: "Reflect",
+                    subtitle: "Look back on your journey with warmth"
+                )
             }
-            .padding()
+            .padding(.horizontal, 24)
+
+            Text("That's it. Simple, gentle, yours.")
+                .font(.caption)
+                .foregroundStyle(theme.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.top, 8)
+
+            Spacer(minLength: 8)
         }
-        .scrollBounceBehavior(.basedOnSize)
+        .padding()
     }
 
     // Step 3: Reassurance — "There is no perfect timeline"
@@ -337,34 +340,40 @@ private extension OnboardingView {
 #endif
     }
 
-    // Helper: Onboarding pill row
-    func onboardingPill(icon: String, title: String, subtitle: String) -> some View {
+    // Helper: Compact How-It-Works row
+    func howItWorksRow(icon: String, title: String, subtitle: String) -> some View {
         HStack(spacing: 16) {
             ZStack {
                 Circle()
                     .fill(theme.blue.opacity(0.12))
-                    .frame(width: 48, height: 48)
+                    .frame(width: 44, height: 44)
 
                 Image(systemName: icon)
-                    .font(.system(size: 20))
+                    .font(.system(size: 18))
                     .foregroundStyle(theme.blue)
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.headline)
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(theme.text)
 
                 Text(subtitle)
-                    .font(.subheadline)
+                    .font(.footnote)
                     .foregroundStyle(theme.textSecondary)
+                    .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
             Spacer()
         }
-        .padding(16)
-        .warmCard(nightMode: theme.isNightMode)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(theme.isNightMode ? Theme.nightCard : .white)
+                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        )
     }
 }
 
