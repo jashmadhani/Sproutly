@@ -11,42 +11,49 @@ import SwiftData
 /// five domains (Gross Motor, Fine Motor, Language, Cognitive, Social-Emotional)
 /// and eight age windows (6mo–5yr). Based on CDC/AAP developmental guidelines.
 struct DataSeeder {
-    
+
+    // MARK: - All Milestones (used by PreviewMocks)
+
+    /// The complete flat array of all 80 milestone definitions.
+    /// Exposed so PreviewMocks can insert them directly into an
+    /// in-memory container without going through seedIfNeeded.
+    static var allMilestones: [Milestone] {
+        sixMonth + nineMonth + twelveMonth + eighteenMonth
+            + twentyFourMonth + thirtySixMonth + fortyEightMonth + sixtyMonth
+    }
+
+    // MARK: - Entry Points
+
     @MainActor
     static func seedIfNeeded(modelContext: ModelContext) {
         let descriptor = FetchDescriptor<Milestone>()
         let existingCount = (try? modelContext.fetchCount(descriptor)) ?? 0
-        
-        // If we don't have exactly the complete set of 60 milestones, the DB is empty or corrupted.
-        if existingCount < 60 {
-            // Manually fetch and delete any lingering entries to avoid corruption
-            if let allExisting = try? modelContext.fetch(descriptor) {
-                for m in allExisting {
-                    modelContext.delete(m)
-                }
-            }
-            
-            let all = sixMonth + nineMonth + twelveMonth + eighteenMonth
-                + twentyFourMonth + thirtySixMonth + fortyEightMonth + sixtyMonth
-            
-            for m in all { modelContext.insert(m) }
-            
-            do {
-                try modelContext.save()
-            } catch {
-                print("Failed to save seeded milestones: \(error.localizedDescription)")
-            }
+
+        // Total milestones = 80 (10 per age window × 8 windows).
+        guard existingCount < 80 else { return }
+
+        // Delete any partial data first
+        if let existing = try? modelContext.fetch(descriptor) {
+            for m in existing { modelContext.delete(m) }
+        }
+
+        for m in allMilestones { modelContext.insert(m) }
+
+        do {
+            try modelContext.save()
+        } catch {
+            print("⚠️ Sproutly: Failed to save seeded milestones — \(error.localizedDescription)")
         }
     }
-    
+
     /// Legacy entry point — routes to seedIfNeeded.
     @MainActor
     static func loadSampleData(modelContext: ModelContext) {
         seedIfNeeded(modelContext: modelContext)
     }
-    
+
     // MARK: - 6 Months
-    
+
     private static var sixMonth: [Milestone] { [
         Milestone(title: "Sits with support", category: "Gross Motor", ageMonth: 6,
                   tips: "Sitting up opens a whole new world for them. Surround with soft cushions and let them explore."),
@@ -69,9 +76,9 @@ struct DataSeeder {
         Milestone(title: "Enjoys looking at self in mirror", category: "Social-Emotional", ageMonth: 6,
                   tips: "Mirror play builds self-awareness. Smile at their reflection together."),
     ] }
-    
+
     // MARK: - 9 Months
-    
+
     private static var nineMonth: [Milestone] { [
         Milestone(title: "Pulls to standing position", category: "Gross Motor", ageMonth: 9,
                   tips: "The world looks different standing up. Make sure furniture is stable for those early pulls."),
@@ -94,9 +101,9 @@ struct DataSeeder {
         Milestone(title: "Has favorite toys", category: "Social-Emotional", ageMonth: 9,
                   tips: "Preferences show personality emerging. Notice what they're drawn to."),
     ] }
-    
+
     // MARK: - 12 Months
-    
+
     private static var twelveMonth: [Milestone] { [
         Milestone(title: "Walks holding onto furniture (cruising)", category: "Gross Motor", ageMonth: 12,
                   tips: "Cruising along furniture is a confident step toward independence."),
@@ -119,9 +126,9 @@ struct DataSeeder {
         Milestone(title: "May cry when parent leaves", category: "Social-Emotional", ageMonth: 12,
                   tips: "Separation distress means a strong bond. Brief, calm goodbyes help."),
     ] }
-    
+
     // MARK: - 18 Months
-    
+
     private static var eighteenMonth: [Milestone] { [
         Milestone(title: "Walks independently", category: "Gross Motor", ageMonth: 18,
                   tips: "Independent walking is a landmark moment. Each child reaches it in their own time."),
@@ -144,9 +151,9 @@ struct DataSeeder {
         Milestone(title: "May have temper tantrums", category: "Social-Emotional", ageMonth: 18,
                   tips: "Tantrums mean feelings are bigger than words. Stay calm and close — you're their anchor."),
     ] }
-    
+
     // MARK: - 24 Months (2 Years)
-    
+
     private static var twentyFourMonth: [Milestone] { [
         Milestone(title: "Runs well", category: "Gross Motor", ageMonth: 24,
                   tips: "Running, climbing, moving — their body is learning what it can do. Space to move matters."),
@@ -169,9 +176,9 @@ struct DataSeeder {
         Milestone(title: "Copies others, especially adults", category: "Social-Emotional", ageMonth: 24,
                   tips: "Imitation is how they learn social behavior. You are their most important model."),
     ] }
-    
+
     // MARK: - 36 Months (3 Years)
-    
+
     private static var thirtySixMonth: [Milestone] { [
         Milestone(title: "Climbs well", category: "Gross Motor", ageMonth: 36,
                   tips: "Climbing builds strength, coordination, and brave problem-solving."),
@@ -194,9 +201,9 @@ struct DataSeeder {
         Milestone(title: "Shows concern for a crying friend", category: "Social-Emotional", ageMonth: 36,
                   tips: "Empathy is blooming. Their heart is growing alongside their mind."),
     ] }
-    
+
     // MARK: - 48 Months (4 Years)
-    
+
     private static var fortyEightMonth: [Milestone] { [
         Milestone(title: "Hops on one foot", category: "Gross Motor", ageMonth: 48,
                   tips: "Hopping requires balance, strength, and body control — impressive coordination."),
@@ -219,9 +226,9 @@ struct DataSeeder {
         Milestone(title: "Increasingly inventive in fantasy play", category: "Social-Emotional", ageMonth: 48,
                   tips: "Rich pretend play shows emotional processing and social learning at work."),
     ] }
-    
+
     // MARK: - 60 Months (5 Years)
-    
+
     private static var sixtyMonth: [Milestone] { [
         Milestone(title: "Skips and stands on one foot 10+ seconds", category: "Gross Motor", ageMonth: 60,
                   tips: "Complex movement shows the body and brain working in harmony."),

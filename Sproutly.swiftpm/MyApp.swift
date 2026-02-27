@@ -8,27 +8,36 @@
 import SwiftUI
 import SwiftData
 
-/// Synchronously initialized and seeded app container.
-/// Fixes the iOS 17 SwiftData bug where programmatic data seeding triggers after @Query evaluates,
-/// preventing the UI from rendering "0 of 0" on the first launch.
+// MARK: - Shared Container
+//
+// SEEDING STRATEGY
+// Initialize the container and seed data directly into the `mainContext`.
+// Because this happens synchronously before any SwiftUI view reads from `@Query`,
+// the data is immediately present in the main context on the very first render,
+// avoiding the need for complex save notification workarounds.
+
 @MainActor
 let sharedAppContainer: ModelContainer = {
     do {
         let schema = Schema([Milestone.self])
-        let config = ModelConfiguration(isStoredInMemoryOnly: false)
+        let config = ModelConfiguration("SproutlyDB", isStoredInMemoryOnly: false)
         let container = try ModelContainer(for: schema, configurations: [config])
+
         DataSeeder.seedIfNeeded(modelContext: container.mainContext)
+
         return container
     } catch {
         fatalError("Failed to build app container: \(error)")
     }
 }()
 
+// MARK: - App Entry Point
+
 @main
 struct MyApp: App {
     @State private var childProfile = ChildProfile.load()
     @State private var themeManager = ThemeManager()
-    
+
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -40,10 +49,12 @@ struct MyApp: App {
     }
 }
 
-/// Root view that routes between Onboarding and the Main Tab View.
+// MARK: - Root View
+
 struct ContentView: View {
     @Environment(ChildProfile.self) private var childProfile
     @Environment(ThemeManager.self) private var theme
+    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         Group {
@@ -56,5 +67,10 @@ struct ContentView: View {
             }
         }
         .animation(.easeInOut(duration: 0.5), value: childProfile.hasCompletedOnboarding)
+        .task {
+            // Seed directly into the environment's context so all @Query
+            // properties instances immediately see the new data without needing remote notifications.
+            DataSeeder.seedIfNeeded(modelContext: modelContext)
+        }
     }
 }

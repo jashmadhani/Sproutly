@@ -13,7 +13,7 @@ import SwiftData
 /// Represents a developmental milestone aligned with NCBI developmental staging.
 /// Each milestone belongs to one of five domains and has an expected age in months.
 @Model
-final class Milestone {
+final class Milestone: Identifiable {
     
     // MARK: - Properties
     
