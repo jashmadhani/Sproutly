@@ -207,23 +207,23 @@ extension View {
     /// Applies warm, rounded card styling that adapts to night mode.
     func warmCard(nightMode: Bool) -> some View {
         self
-            .padding(Theme.padding)
+            .padding(20)
             .background(Theme.cardBackground(for: nightMode))
             .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius, style: .continuous))
             .shadow(
                 color: nightMode
-                    ? Color.black.opacity(0.3)
-                    : Theme.dayText.opacity(0.08),
-                radius: nightMode ? 8 : 16,
+                    ? Color.black.opacity(0.35)
+                    : Theme.dayText.opacity(0.06),
+                radius: nightMode ? 10 : 20,
                 x: 0,
-                y: nightMode ? 4 : 6
+                y: nightMode ? 5 : 8
             )
             .overlay(
                 RoundedRectangle(cornerRadius: Theme.cardCornerRadius, style: .continuous)
                     .stroke(
                         nightMode
-                            ? Color.white.opacity(0.06)
-                            : Theme.dayText.opacity(0.05),
+                            ? Color.white.opacity(0.08)
+                            : Theme.dayText.opacity(0.04),
                         lineWidth: 1
                     )
             )

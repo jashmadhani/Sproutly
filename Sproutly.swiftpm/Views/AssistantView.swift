@@ -30,7 +30,7 @@ struct AssistantView: View {
                     assistantCard
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 54)
+                .padding(.top, 20)
                 .padding(.bottom, 32)
                 .background(
                     GeometryReader { geo in
@@ -63,7 +63,7 @@ struct AssistantView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 50)
+                .padding(.top, 16)
                 .opacity(isCompactHeader ? 1 : 0)
                 .animation(.easeInOut(duration: 0.25), value: isCompactHeader)
                 Spacer()

@@ -36,10 +36,32 @@ struct DashboardView: View {
 
     private var correctedAge: Int { max(0, childProfile.calculateCorrectedAge()) }
 
+    /// All distinct age brackets in the seeded data, sorted ascending.
+    private var allAgeBrackets: [Int] {
+        Array(Set(milestones.map(\.ageMonth))).sorted()
+    }
+
+    /// Smart progression: stays on the most recent incomplete bracket
+    /// (≤60% done) that the child's age has reached or passed.
+    /// Only advances when >60% of the bracket is complete.
     private var targetAgeMonth: Int {
         guard !milestones.isEmpty else { return 6 }
-        let allAges = Set(milestones.map(\.ageMonth))
-        return allAges.min(by: { abs($0 - correctedAge) < abs($1 - correctedAge) }) ?? 6
+        let brackets = allAgeBrackets
+        // Find brackets the child has reached (age >= bracket)
+        let reachedBrackets = brackets.filter { $0 <= correctedAge }
+        // Walk backwards through reached brackets to find the first incomplete one
+        for bracket in reachedBrackets.reversed() {
+            let bracketMilestones = milestones.filter { $0.ageMonth == bracket }
+            let completed = bracketMilestones.filter(\.isCompleted).count
+            let total = bracketMilestones.count
+            guard total > 0 else { continue }
+            let progress = Double(completed) / Double(total)
+            if progress <= 0.6 {
+                return bracket
+            }
+        }
+        // All reached brackets are >60% done — show the nearest bracket to current age
+        return brackets.min(by: { abs($0 - correctedAge) < abs($1 - correctedAge) }) ?? 6
     }
 
     private var currentStageMilestones: [Milestone] {
@@ -70,6 +92,26 @@ struct DashboardView: View {
         return (cat.filter(\.isCompleted).count, cat.count)
     }
 
+    // MARK: - Development Focus Engine
+
+    /// Incomplete milestones from age brackets the child has clearly passed
+    /// (child age is at least 3 months beyond the bracket).
+    private var focusMilestones: [Milestone] {
+        milestones.filter { milestone in
+            !milestone.isCompleted && correctedAge >= milestone.ageMonth + 3
+        }
+    }
+
+    /// True when there are meaningful previous-bracket gaps worth surfacing.
+    private var hasDevelopmentFocus: Bool {
+        focusMilestones.count >= 2
+    }
+
+    /// Count of domains with focus milestones, for copy specificity.
+    private var focusDomainCount: Int {
+        Set(focusMilestones.map(\.category)).count
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -77,18 +119,20 @@ struct DashboardView: View {
             AmbientBackground(nightMode: theme.isNightMode)
 
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: 28) {
                     headerCard
                     progressCard
+                    if hasDevelopmentFocus {
+                        developmentFocusCard
+                    }
                     categoryOverview
                     recentMomentsCard
                     screeningCards
-                    educationSection
-                    growthTipCard
+                    growthInsightsSection
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 54)
-                .padding(.bottom, 32)
+                .padding(.top, 20)
+                .padding(.bottom, 40)
                 .background(
                     GeometryReader { geo in
                         Color.clear.preference(
@@ -118,13 +162,13 @@ struct DashboardView: View {
             VStack {
                 HStack(spacing: 12) {
                     Text("Sproutly")
-                        .font(.system(.subheadline, design: .rounded))
+                        .font(.system(.callout, design: .rounded))
                         .fontWeight(.bold)
                         .foregroundStyle(theme.text)
                     Spacer()
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 50)
+                .padding(.top, 16)
                 .opacity(isCompactHeader ? 1 : 0)
                 .animation(.easeInOut(duration: 0.25), value: isCompactHeader)
 
@@ -144,27 +188,27 @@ struct DashboardView: View {
     // =========================================================================
 
     private var headerCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(greetingText)
-                .font(.caption)
+                .font(.subheadline)
                 .foregroundStyle(theme.textSecondary)
 
-            Text("\(childProfile.name.isEmpty ? "Little one" : childProfile.name)'s Growth")
+            Text("Little Steps")
                 .font(.system(.title2, design: .rounded))
                 .fontWeight(.bold)
                 .foregroundStyle(theme.text)
 
             HStack(spacing: 6) {
                 Image(systemName: "calendar")
-                    .font(.caption2)
+                    .font(.caption)
                     .foregroundStyle(theme.textSecondary)
-                Text(childProfile.humanReadableAge)
-                    .font(.subheadline)
+                Text("\(childProfile.name.isEmpty ? "Your little one" : childProfile.name) · \(childProfile.humanReadableAge)")
+                    .font(.callout)
                     .foregroundStyle(theme.textSecondary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 8)
+        .padding(.bottom, 4)
     }
 
     private var greetingText: String {
@@ -182,7 +226,7 @@ struct DashboardView: View {
     // =========================================================================
 
     private var progressCard: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             ZStack {
                 MilestoneRingView(
                     progress: currentStageProgress,
@@ -190,81 +234,103 @@ struct DashboardView: View {
                     totalCount: currentStageTotal,
                     nightMode: theme.isNightMode
                 )
-                .frame(width: 120, height: 120)
+                .frame(width: 160, height: 160)
 
                 VStack(spacing: 2) {
                     Text("\(currentStageCompleted)")
-                        .font(.system(.title, design: .rounded))
-                        .fontWeight(.bold)
+                        .font(.system(size: 40, weight: .bold, design: .rounded))
                         .foregroundStyle(theme.text)
 
                     Text("of \(currentStageTotal)")
-                        .font(.caption2)
+                        .font(.subheadline)
                         .foregroundStyle(theme.textSecondary)
 
                     Text("milestones")
-                        .font(.caption2)
+                        .font(.caption)
                         .foregroundStyle(theme.textSecondary)
                 }
             }
 
             Text("\(targetAgeMonth)-month milestones")
-                .font(.caption)
+                .font(.subheadline)
                 .foregroundStyle(theme.textSecondary)
         }
+        .padding(.vertical, 20)
         .frame(maxWidth: .infinity)
-        .warmCard(nightMode: theme.isNightMode)
     }
 
     // =========================================================================
-    // MARK: - Category Overview (Domain Progress Bars)
+    // MARK: - Category Overview (Bento Grid)
     // =========================================================================
 
     private var categoryOverview: some View {
-        VStack(spacing: 12) {
-            ForEach(MilestoneCategory.allCases, id: \.self) { category in
-                let stats = categoryStats(category)
-                let progress = stats.total > 0 ? Double(stats.completed) / Double(stats.total) : 0
+        let columns = [
+            GridItem(.flexible(), spacing: 14),
+            GridItem(.flexible(), spacing: 14)
+        ]
 
-                HStack(spacing: 14) {
-                    ZStack {
-                        Circle()
-                            .fill(category.color(for: theme.isNightMode).opacity(0.12))
-                            .frame(width: 36, height: 36)
+        return VStack(alignment: .leading, spacing: 14) {
+            Text("Growth Domains")
+                .font(.callout.weight(.semibold))
+                .foregroundStyle(theme.text)
+                .padding(.leading, 4)
 
-                        Image(systemName: category.icon)
-                            .font(.system(size: 16))
-                            .foregroundStyle(category.color(for: theme.isNightMode))
-                    }
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(category.gentleLabel)
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(theme.text)
-
-                        GeometryReader { geo in
-                            ZStack(alignment: .leading) {
-                                Capsule()
-                                    .fill(theme.text.opacity(0.06))
-                                    .frame(height: 6)
-
-                                Capsule()
-                                    .fill(category.color(for: theme.isNightMode).opacity(0.6))
-                                    .frame(width: max(0, geo.size.width * progress), height: 6)
-                                    .animation(.easeInOut(duration: 0.4), value: progress)
-                            }
-                        }
-                        .frame(height: 6)
-                    }
-
-                    Text("\(stats.completed)/\(stats.total)")
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(theme.textSecondary)
-                        .monospacedDigit()
+            LazyVGrid(columns: columns, spacing: 14) {
+                ForEach(MilestoneCategory.allCases, id: \.self) { category in
+                    domainTile(category)
                 }
             }
         }
-        .warmCard(nightMode: theme.isNightMode)
+    }
+
+    private func domainTile(_ category: MilestoneCategory) -> some View {
+        let stats = categoryStats(category)
+        let progress = stats.total > 0 ? Double(stats.completed) / Double(stats.total) : 0
+        let domainColor = category.color(for: theme.isNightMode)
+
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: category.icon)
+                    .font(.system(size: 17))
+                    .foregroundStyle(domainColor)
+
+                Spacer()
+
+                Text("\(stats.completed)/\(stats.total)")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(theme.text.opacity(0.7))
+                    .monospacedDigit()
+            }
+
+            Text(category.gentleLabel)
+                .font(.callout.weight(.medium))
+                .foregroundStyle(theme.text)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(theme.text.opacity(0.06))
+                        .frame(height: 6)
+
+                    Capsule()
+                        .fill(domainColor.opacity(0.7))
+                        .frame(width: max(0, geo.size.width * progress), height: 6)
+                        .animation(.easeOut(duration: 0.3), value: progress)
+                }
+            }
+            .frame(height: 6)
+        }
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(domainColor.opacity(theme.isNightMode ? 0.12 : 0.10))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(domainColor.opacity(0.10), lineWidth: 1)
+        )
     }
 
     // =========================================================================
@@ -272,43 +338,73 @@ struct DashboardView: View {
     // =========================================================================
 
     private var recentMomentsCard: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 12) {
             Text("Recent Moments")
-                .font(.subheadline.weight(.medium))
+                .font(.callout.weight(.semibold))
                 .foregroundStyle(theme.text)
+                .padding(.leading, 4)
 
             if completedMilestones.isEmpty {
-                HStack {
+                HStack(spacing: 10) {
                     Image(systemName: "sparkles")
                         .foregroundStyle(theme.textSecondary)
                     Text("Moments you notice will appear here")
                         .font(.subheadline)
                         .foregroundStyle(theme.textSecondary)
                 }
-                .padding(.vertical, 12)
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(theme.isNightMode ? Theme.nightCard : .white)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(theme.text.opacity(0.04), lineWidth: 1)
+                )
             } else {
-                ForEach(completedMilestones.prefix(5)) { milestone in
-                    HStack(spacing: 12) {
-                        Circle()
-                            .fill(theme.green.opacity(0.15))
-                            .frame(width: 8, height: 8)
+                ForEach(completedMilestones.prefix(3)) { milestone in
+                    HStack(spacing: 14) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 16))
+                            .foregroundStyle(theme.green)
 
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: 3) {
                             Text(milestone.title)
-                                .font(.subheadline)
+                                .font(.subheadline.weight(.medium))
                                 .foregroundStyle(theme.text)
+                                .lineLimit(1)
 
                             if let date = milestone.dateCompleted {
                                 Text(date, format: .dateTime.month(.abbreviated).day())
-                                    .font(.caption2)
+                                    .font(.caption)
                                     .foregroundStyle(theme.textSecondary)
                             }
                         }
+
+                        Spacer()
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(theme.isNightMode ? Theme.nightCard : .white)
+                    )
+                    .shadow(
+                        color: theme.isNightMode
+                            ? Color.black.opacity(0.2)
+                            : Theme.dayText.opacity(0.04),
+                        radius: 8,
+                        x: 0,
+                        y: 3
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(theme.text.opacity(0.04), lineWidth: 1)
+                    )
                 }
             }
         }
-        .warmCard(nightMode: theme.isNightMode)
     }
 
     // =========================================================================
@@ -323,40 +419,55 @@ struct DashboardView: View {
     }
 
     // =========================================================================
-    // MARK: - Education
+    // MARK: - Growth Insights (Merged)
     // =========================================================================
 
-    private var educationSection: some View {
-        EducationView(nightMode: theme.isNightMode)
+    private var growthInsightsSection: some View {
+        GrowthInsightsView(nightMode: theme.isNightMode)
     }
 
     // =========================================================================
-    // MARK: - Growth Tip
+    // MARK: - Development Focus Card
     // =========================================================================
 
-    private var growthTipCard: some View {
-        HStack(alignment: .top, spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(theme.green.opacity(0.12))
-                    .frame(width: 40, height: 40)
+    private var developmentFocusCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "eyes")
+                    .font(.system(size: 16))
+                    .foregroundStyle(theme.isNightMode
+                        ? Theme.encourageYellow(for: true)
+                        : Theme.encourageYellow(for: false)
+                    )
 
-                Image(systemName: "leaf.fill")
-                    .foregroundStyle(theme.green)
+                Text("Development Focus")
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(theme.text)
             }
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Growth Tip")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(theme.text)
+            Text(focusCopyText)
+                .font(.subheadline)
+                .foregroundStyle(theme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
 
-                Text("Children learn best through everyday moments — bath time, walks, and shared meals are all opportunities for gentle growth.")
+            HStack(spacing: 6) {
+                Image(systemName: "info.circle")
                     .font(.caption)
-                    .foregroundStyle(theme.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .foregroundStyle(theme.textSecondary.opacity(0.7))
+                Text("\(focusMilestones.count) earlier milestones across \(focusDomainCount) area\(focusDomainCount == 1 ? "" : "s")")
+                    .font(.caption)
+                    .foregroundStyle(theme.textSecondary.opacity(0.7))
             }
         }
         .warmCard(nightMode: theme.isNightMode)
+    }
+
+    private var focusCopyText: String {
+        if focusMilestones.count >= 5 {
+            return "Some earlier milestones are still unfolding. Many children progress at their own pace — it can be helpful to revisit these skills gently and discuss them at your next well-child visit."
+        } else {
+            return "A few earlier milestones are still developing. This is very common. Continue observing through everyday play and routines — every child grows uniquely."
+        }
     }
 }
 

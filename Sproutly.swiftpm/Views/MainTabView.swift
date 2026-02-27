@@ -40,18 +40,24 @@ struct MainTabView: View {
     }
 
     var body: some View {
-        Group {
-            switch selectedTab {
-            case .dashboard:
-                DashboardView()
-            case .milestones:
-                MilestonesView()
-            case .assistant:
-                AssistantView()
-            case .settings:
-                SettingsView()
-            }
+        ZStack {
+            DashboardView()
+                .opacity(selectedTab == .dashboard ? 1 : 0)
+                .allowsHitTesting(selectedTab == .dashboard)
+
+            MilestonesView()
+                .opacity(selectedTab == .milestones ? 1 : 0)
+                .allowsHitTesting(selectedTab == .milestones)
+
+            AssistantView()
+                .opacity(selectedTab == .assistant ? 1 : 0)
+                .allowsHitTesting(selectedTab == .assistant)
+
+            SettingsView()
+                .opacity(selectedTab == .settings ? 1 : 0)
+                .allowsHitTesting(selectedTab == .settings)
         }
+        .animation(nil, value: selectedTab)
         .safeAreaInset(edge: .bottom) {
             floatingDock
         }
@@ -62,63 +68,63 @@ struct MainTabView: View {
     private var floatingDock: some View {
         HStack(spacing: 0) {
             ForEach(Tab.allCases, id: \.self) { tab in
+                let isSelected = selectedTab == tab
                 Button {
 #if os(iOS)
                     let generator = UISelectionFeedbackGenerator()
                     generator.selectionChanged()
 #endif
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        selectedTab = tab
-                    }
+                    selectedTab = tab
                 } label: {
-                    VStack(spacing: 6) {
-                        Image(systemName: selectedTab == tab ? tab.selectedIcon : tab.icon)
-                            .font(.system(size: 20))
-                            .scaleEffect(selectedTab == tab ? 1.1 : 1.0)
-                            .animation(.easeInOut(duration: 0.25), value: selectedTab)
+                    VStack(spacing: 5) {
+                        Image(systemName: isSelected ? tab.selectedIcon : tab.icon)
+                            .font(.system(size: 22, weight: isSelected ? .semibold : .regular))
+                            .scaleEffect(isSelected ? 1.08 : 1.0)
+                            .animation(.easeInOut(duration: 0.2), value: selectedTab)
 
                         Text(tab.rawValue)
-                            .font(.system(size: 10, weight: selectedTab == tab ? .semibold : .regular, design: .rounded))
+                            .font(.system(size: 11, weight: isSelected ? .bold : .medium, design: .rounded))
                     }
                     .foregroundStyle(
-                        selectedTab == tab
+                        isSelected
                             ? theme.blue
-                            : theme.textSecondary
+                            : theme.textSecondary.opacity(0.8)
                     )
                     .frame(maxWidth: .infinity)
+                    .frame(minHeight: 44)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 14)
         .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            RoundedRectangle(cornerRadius: 30, style: .continuous)
                 .fill(
                     theme.isNightMode
-                        ? Theme.nightCard.opacity(0.95)
-                        : .white.opacity(0.95)
+                        ? Theme.nightCard.opacity(0.98)
+                        : .white.opacity(0.98)
                 )
                 .shadow(
                     color: theme.isNightMode
-                        ? Color.black.opacity(0.4)
-                        : Theme.dayText.opacity(0.1),
-                    radius: 20,
+                        ? Color.black.opacity(0.5)
+                        : Theme.dayText.opacity(0.12),
+                    radius: 24,
                     x: 0,
-                    y: 8
+                    y: 10
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    RoundedRectangle(cornerRadius: 30, style: .continuous)
                         .stroke(
                             theme.isNightMode
-                                ? Color.white.opacity(0.06)
-                                : Theme.dayText.opacity(0.05),
+                                ? Color.white.opacity(0.08)
+                                : Theme.dayText.opacity(0.06),
                             lineWidth: 1
                         )
                 )
         )
-        .padding(.horizontal, 24)
-        .padding(.bottom, 4)
+        .padding(.horizontal, 20)
+        .padding(.bottom, 6)
     }
 }
 
