@@ -76,204 +76,211 @@ private extension OnboardingView {
     
     // Step 1: Welcome — "Every small moment matters"
     var welcomeStep: some View {
-        VStack(spacing: 24) {
-            Spacer()
-            
-            // Soft icon
-            ZStack {
-                Circle()
-                    .fill(theme.blue.opacity(0.12))
-                    .frame(width: 130, height: 130)
-                
-                Circle()
-                    .fill(theme.blue.opacity(0.08))
-                    .frame(width: 110, height: 110)
-                
-                Image(systemName: "leaf.circle.fill")
-                    .font(.system(size: 60))
-                    .foregroundStyle(theme.blue)
-            }
-            
-            Text("Sproutly")
-                .font(.system(size: 36, weight: .bold, design: .rounded))
-                .foregroundStyle(theme.text)
-            
-            VStack(spacing: 8) {
-                Text("Every small moment matters")
-                    .font(.title3.weight(.medium))
+        ScrollView {
+            VStack(spacing: 24) {
+                Spacer(minLength: 40)
+
+                ZStack {
+                    Circle()
+                        .fill(theme.blue.opacity(0.12))
+                        .frame(width: 130, height: 130)
+
+                    Circle()
+                        .fill(theme.blue.opacity(0.08))
+                        .frame(width: 110, height: 110)
+
+                    Image(systemName: "leaf.circle.fill")
+                        .font(.system(size: 60))
+                        .foregroundStyle(theme.blue)
+                }
+
+                Text("Sproutly")
+                    .font(.system(size: 36, weight: .bold, design: .rounded))
                     .foregroundStyle(theme.text)
-                
-                Text("Sproutly helps you notice the quiet,\nbeautiful growth happening every day.")
-                    .font(.body)
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(theme.textSecondary)
-                    .lineSpacing(4)
+
+                VStack(spacing: 8) {
+                    Text("Every small moment matters")
+                        .font(.title3.weight(.medium))
+                        .foregroundStyle(theme.text)
+
+                    Text("Sproutly helps you notice the quiet,\nbeautiful growth happening every day.")
+                        .font(.body)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(theme.textSecondary)
+                        .lineSpacing(4)
+                }
+
+                Spacer(minLength: 40)
             }
-            
-            Spacer()
+            .padding()
         }
-        .padding()
+        .scrollBounceBehavior(.basedOnSize)
     }
     
     // Step 2: How It Works — Observe → Log → Reflect
     var howItWorksStep: some View {
-        VStack(spacing: 32) {
-            Spacer()
-            
-            Text("How Sproutly Works")
-                .font(.system(.title2, design: .rounded))
-                .fontWeight(.bold)
-                .foregroundStyle(theme.text)
-            
-            VStack(spacing: 24) {
-                onboardingPill(
-                    icon: "eye",
-                    title: "Observe",
-                    subtitle: "Notice the little things your child does each day"
-                )
-                
-                onboardingPill(
-                    icon: "square.and.pencil",
-                    title: "Log",
-                    subtitle: "Tap once to record a milestone — it takes a second"
-                )
-                
-                onboardingPill(
-                    icon: "heart.text.square",
-                    title: "Reflect",
-                    subtitle: "Look back on your journey with warmth"
-                )
+        ScrollView {
+            VStack(spacing: 20) {
+                Spacer(minLength: 24)
+
+                Text("How Sproutly Works")
+                    .font(.system(.title2, design: .rounded))
+                    .fontWeight(.bold)
+                    .foregroundStyle(theme.text)
+
+                VStack(spacing: 16) {
+                    onboardingPill(
+                        icon: "eye",
+                        title: "Observe",
+                        subtitle: "Notice the little things your child does each day"
+                    )
+
+                    onboardingPill(
+                        icon: "square.and.pencil",
+                        title: "Log",
+                        subtitle: "Tap once to record a milestone — it takes a second"
+                    )
+
+                    onboardingPill(
+                        icon: "heart.text.square",
+                        title: "Reflect",
+                        subtitle: "Look back on your journey with warmth"
+                    )
+                }
+                .padding(.horizontal, 24)
+
+                Spacer(minLength: 24)
             }
-            .padding(.horizontal, 24)
-            
-            Spacer()
+            .padding()
         }
-        .padding()
+        .scrollBounceBehavior(.basedOnSize)
     }
     
     // Step 3: Reassurance — "There is no perfect timeline"
     var reassuranceStep: some View {
-        VStack(spacing: 24) {
-            Spacer()
-            
-            ZStack {
-                Circle()
-                    .fill(theme.green.opacity(0.12))
-                    .frame(width: 120, height: 120)
-                
-                Image(systemName: "heart.circle.fill")
-                    .font(.system(size: 55))
-                    .foregroundStyle(theme.green)
+        ScrollView {
+            VStack(spacing: 24) {
+                Spacer(minLength: 40)
+
+                ZStack {
+                    Circle()
+                        .fill(theme.green.opacity(0.12))
+                        .frame(width: 120, height: 120)
+
+                    Image(systemName: "heart.circle.fill")
+                        .font(.system(size: 55))
+                        .foregroundStyle(theme.green)
+                }
+
+                Text("There is no\nperfect timeline")
+                    .font(.system(.title, design: .rounded))
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(theme.text)
+
+                Text("Every child blooms in their own time.\nSproutly is here to support you,\nnot to score or compare.")
+                    .font(.body)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(theme.textSecondary)
+                    .lineSpacing(4)
+
+                Spacer(minLength: 40)
             }
-            
-            Text("There is no\nperfect timeline")
-                .font(.system(.title, design: .rounded))
-                .fontWeight(.bold)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(theme.text)
-            
-            Text("Every child blooms in their own time.\nSproutly is here to support you,\nnot to score or compare.")
-                .font(.body)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(theme.textSecondary)
-                .lineSpacing(4)
-            
-            Spacer()
+            .padding()
         }
-        .padding()
+        .scrollBounceBehavior(.basedOnSize)
     }
     
     // Step 4: Quick Profile Setup
     var profileStep: some View {
-        VStack(spacing: 28) {
-            Spacer()
-            
-            VStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(theme.yellow.opacity(0.25))
-                        .frame(width: 60, height: 60)
-                    
-                    Image(systemName: "person.crop.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(theme.blue)
-                }
-                
-                Text("About Your Little One")
-                    .font(.system(.title2, design: .rounded))
-                    .fontWeight(.bold)
-                    .foregroundStyle(theme.text)
-            }
-            
-            // Input card
-            VStack(alignment: .leading, spacing: 20) {
-                // Name field
-                VStack(alignment: .leading, spacing: 8) {
-                    Label("Child's Name", systemImage: "heart.fill")
-                        .font(.subheadline)
-                        .foregroundStyle(theme.blue)
-                    
-                    TextField("Enter name", text: $childName)
-                        .textFieldStyle(.plain)
-                        .padding(16)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(theme.text.opacity(0.05))
-                        )
+        ScrollView {
+            VStack(spacing: 20) {
+                Spacer(minLength: 16)
+
+                VStack(spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(theme.yellow.opacity(0.25))
+                            .frame(width: 60, height: 60)
+
+                        Image(systemName: "person.crop.circle.fill")
+                            .font(.system(size: 28))
+                            .foregroundStyle(theme.blue)
+                    }
+
+                    Text("About Your Little One")
+                        .font(.system(.title2, design: .rounded))
+                        .fontWeight(.bold)
                         .foregroundStyle(theme.text)
                 }
-                
-                // Birth date
-                VStack(alignment: .leading, spacing: 8) {
-                    Label("Birth Date", systemImage: "calendar")
-                        .font(.subheadline)
-                        .foregroundStyle(theme.blue)
-                    
-                    DatePicker("", selection: $birthDate, displayedComponents: .date)
-                        .datePickerStyle(.compact)
-                        .labelsHidden()
-                        .tint(theme.blue)
-                }
-                
-                // Prematurity toggle
-                Toggle(isOn: $isPremature) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Born Before 37 Weeks")
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(theme.text)
-                        Text("We'll adjust milestones gently")
-                            .font(.caption)
-                            .foregroundStyle(theme.textSecondary)
-                    }
-                }
-                .tint(theme.green)
-                
-                if isPremature {
+
+                VStack(alignment: .leading, spacing: 20) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Label("Gestational Age at Birth", systemImage: "calendar.badge.clock")
+                        Label("Child's Name", systemImage: "heart.fill")
                             .font(.subheadline)
                             .foregroundStyle(theme.blue)
-                        
-                        Picker("Weeks", selection: $gestationalWeeks) {
-                            ForEach(24...36, id: \.self) { week in
-                                Text("\(week) weeks").tag(week)
-                            }
-                        }
-#if os(iOS)
-                        .pickerStyle(.wheel)
-#endif
-                        .frame(height: 100)
+
+                        TextField("Enter name", text: $childName)
+                            .textFieldStyle(.plain)
+                            .padding(16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(theme.text.opacity(0.05))
+                            )
+                            .foregroundStyle(theme.text)
                     }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Birth Date", systemImage: "calendar")
+                            .font(.subheadline)
+                            .foregroundStyle(theme.blue)
+
+                        DatePicker("", selection: $birthDate, displayedComponents: .date)
+                            .datePickerStyle(.compact)
+                            .labelsHidden()
+                            .tint(theme.blue)
+                    }
+
+                    Toggle(isOn: $isPremature) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Born Before 37 Weeks")
+                                .font(.subheadline.weight(.medium))
+                                .foregroundStyle(theme.text)
+                            Text("We'll adjust milestones gently")
+                                .font(.caption)
+                                .foregroundStyle(theme.textSecondary)
+                        }
+                    }
+                    .tint(theme.green)
+
+                    if isPremature {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Label("Gestational Age at Birth", systemImage: "calendar.badge.clock")
+                                .font(.subheadline)
+                                .foregroundStyle(theme.blue)
+
+                            Picker("Weeks", selection: $gestationalWeeks) {
+                                ForEach(24...36, id: \.self) { week in
+                                    Text("\(week) weeks").tag(week)
+                                }
+                            }
+#if os(iOS)
+                            .pickerStyle(.wheel)
+#endif
+                            .frame(height: 100)
+                        }
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
                 }
+                .padding(24)
+                .warmCard(nightMode: theme.isNightMode)
+                .animation(.spring(response: 0.4), value: isPremature)
+
+                Spacer(minLength: 24)
             }
-            .padding(24)
-            .warmCard(nightMode: theme.isNightMode)
-            .animation(.spring(response: 0.4), value: isPremature)
-            
-            Spacer()
+            .padding()
         }
-        .padding()
+        .scrollBounceBehavior(.basedOnSize)
     }
     
     // Helper: Onboarding pill row
