@@ -28,9 +28,6 @@ struct MilestonesView: View {
 
     @State private var selectedFilter: MilestoneFilter = .thisStage
     @State private var expandedDomains: Set<String> = Set(MilestoneCategory.allCases.map(\.rawValue))
-    @State private var scrollOffset: CGFloat = 0
-
-    private var isCompactHeader: Bool { scrollOffset < -10 }
 
     // MARK: - Derived Data
 
@@ -55,13 +52,8 @@ struct MilestonesView: View {
         }
     }
 
-    private func milestonesForDomain(_ category: MilestoneCategory) -> [Milestone] {
-        filteredMilestones.filter { $0.category == category.rawValue }
-    }
-
-    private func domainStats(_ category: MilestoneCategory) -> (completed: Int, total: Int) {
-        let domain = milestonesForDomain(category)
-        return (domain.filter(\.isCompleted).count, domain.count)
+    private var groupedMilestones: [String: [Milestone]] {
+        Dictionary(grouping: filteredMilestones, by: \.category)
     }
 
     // MARK: - Body
@@ -79,43 +71,8 @@ struct MilestonesView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
                 .padding(.bottom, 32)
-                .background(
-                    GeometryReader { geo in
-                        Color.clear.preference(
-                            key: ScrollOffsetKey.self,
-                            value: geo.frame(in: .named("milestonesScroll")).minY
-                        )
-                    }
-                )
             }
-            .coordinateSpace(name: "milestonesScroll")
-            .onPreferenceChange(ScrollOffsetKey.self) { scrollOffset = $0 }
             .scrollDismissesKeyboard(.interactively)
-            .mask(
-                VStack(spacing: 0) {
-                    LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
-                        .frame(height: 80)
-                    Color.black
-                }
-                .ignoresSafeArea()
-            )
-
-            // Compact sticky header
-            VStack {
-                HStack {
-                    Text("Milestones")
-                        .font(.system(.subheadline, design: .rounded))
-                        .fontWeight(.bold)
-                        .foregroundStyle(theme.text)
-                    Spacer()
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .opacity(isCompactHeader ? 1 : 0)
-                .animation(.easeInOut(duration: 0.25), value: isCompactHeader)
-                Spacer()
-            }
-            .ignoresSafeArea()
         }
     }
 
@@ -171,17 +128,25 @@ struct MilestonesView: View {
     // =========================================================================
 
     private var domainGroups: some View {
-        VStack(spacing: 12) {
-            ForEach(MilestoneCategory.allCases, id: \.self) { category in
-                let domainMilestones = milestonesForDomain(category)
-                let stats = domainStats(category)
+        let grouped = groupedMilestones
+        let showAll = selectedFilter == .thisStage || selectedFilter == .all
+        let isEmpty = filteredMilestones.isEmpty
 
-                if !domainMilestones.isEmpty || selectedFilter == .thisStage || selectedFilter == .all {
-                    domainSection(category: category, milestones: domainMilestones, stats: stats)
+        return VStack(spacing: 12) {
+            ForEach(MilestoneCategory.allCases, id: \.self) { category in
+                let domainMilestones = grouped[category.rawValue] ?? []
+                let completedCount = domainMilestones.filter(\.isCompleted).count
+
+                if !domainMilestones.isEmpty || showAll {
+                    domainSection(
+                        category: category,
+                        milestones: domainMilestones,
+                        stats: (completedCount, domainMilestones.count)
+                    )
                 }
             }
 
-            if filteredMilestones.isEmpty {
+            if isEmpty {
                 emptyState
             }
         }
@@ -197,7 +162,7 @@ struct MilestonesView: View {
         return VStack(spacing: 0) {
             // Domain header
             Button {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+                withAnimation(.easeOut(duration: 0.2)) {
                     if isExpanded {
                         expandedDomains.remove(category.rawValue)
                     } else {
@@ -232,6 +197,7 @@ struct MilestonesView: View {
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(theme.textSecondary)
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                        .animation(.easeOut(duration: 0.2), value: isExpanded)
                 }
                 .padding(16)
             }
@@ -248,6 +214,7 @@ struct MilestonesView: View {
                     } else {
                         ForEach(milestones) { milestone in
                             milestoneRow(milestone)
+                                .transaction { $0.animation = nil }
                         }
                     }
                 }
@@ -257,7 +224,6 @@ struct MilestonesView: View {
             }
         }
         .warmCard(nightMode: theme.isNightMode)
-        .animation(.spring(response: 0.4, dampingFraction: 0.85), value: isExpanded)
     }
 
     // =========================================================================

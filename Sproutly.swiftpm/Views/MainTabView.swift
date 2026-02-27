@@ -40,24 +40,19 @@ struct MainTabView: View {
     }
 
     var body: some View {
-        ZStack {
-            DashboardView()
-                .opacity(selectedTab == .dashboard ? 1 : 0)
-                .allowsHitTesting(selectedTab == .dashboard)
-
-            MilestonesView()
-                .opacity(selectedTab == .milestones ? 1 : 0)
-                .allowsHitTesting(selectedTab == .milestones)
-
-            AssistantView()
-                .opacity(selectedTab == .assistant ? 1 : 0)
-                .allowsHitTesting(selectedTab == .assistant)
-
-            SettingsView()
-                .opacity(selectedTab == .settings ? 1 : 0)
-                .allowsHitTesting(selectedTab == .settings)
+        Group {
+            switch selectedTab {
+            case .dashboard:
+                DashboardView()
+            case .milestones:
+                MilestonesView()
+            case .assistant:
+                AssistantView()
+            case .settings:
+                SettingsView()
+            }
         }
-        .animation(nil, value: selectedTab)
+        .transaction { $0.animation = nil }
         .safeAreaInset(edge: .bottom) {
             floatingDock
         }
@@ -109,15 +104,6 @@ struct MainTabView: View {
                     radius: 24,
                     x: 0,
                     y: 10
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 30, style: .continuous)
-                        .stroke(
-                            theme.isNightMode
-                                ? Color.white.opacity(0.08)
-                                : Theme.dayText.opacity(0.06),
-                            lineWidth: 1
-                        )
                 )
         )
         .padding(.horizontal, 20)

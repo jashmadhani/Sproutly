@@ -30,8 +30,6 @@ struct DashboardView: View {
 
     @State private var scrollOffset: CGFloat = 0
 
-    private var isCompactHeader: Bool { scrollOffset < -10 }
-
     // MARK: - Derived Data
 
     private var correctedAge: Int { max(0, childProfile.calculateCorrectedAge()) }
@@ -151,48 +149,8 @@ struct DashboardView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
                 .padding(.bottom, 40)
-                .background(
-                    GeometryReader { geo in
-                        Color.clear.preference(
-                            key: ScrollOffsetKey.self,
-                            value: geo.frame(in: .named("dashScroll")).minY
-                        )
-                    }
-                )
             }
-            .coordinateSpace(name: "dashScroll")
-            .onPreferenceChange(ScrollOffsetKey.self) { scrollOffset = $0 }
             .scrollDismissesKeyboard(.interactively)
-            .mask(
-                VStack(spacing: 0) {
-                    LinearGradient(
-                        colors: [.clear, .black],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(height: 80)
-                    Color.black
-                }
-                .ignoresSafeArea()
-            )
-
-            // Compact sticky header
-            VStack {
-                HStack(spacing: 12) {
-                    Text("Sproutly")
-                        .font(.system(.callout, design: .rounded))
-                        .fontWeight(.bold)
-                        .foregroundStyle(theme.text)
-                    Spacer()
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .opacity(isCompactHeader ? 1 : 0)
-                .animation(.easeInOut(duration: 0.25), value: isCompactHeader)
-
-                Spacer()
-            }
-            .ignoresSafeArea()
         }
         .onAppear {
             if milestones.isEmpty {
@@ -340,10 +298,6 @@ struct DashboardView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(domainColor.opacity(theme.isNightMode ? 0.16 : 0.14))
         )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(domainColor.opacity(0.12), lineWidth: 1)
-        )
     }
 
     // =========================================================================
@@ -370,10 +324,6 @@ struct DashboardView: View {
                 .background(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
                         .fill(theme.isNightMode ? Theme.nightCard : .white)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(theme.text.opacity(0.04), lineWidth: 1)
                 )
             } else {
                 ForEach(completedMilestones.prefix(3)) { milestone in
@@ -410,10 +360,6 @@ struct DashboardView: View {
                         radius: 8,
                         x: 0,
                         y: 3
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .stroke(theme.text.opacity(0.04), lineWidth: 1)
                     )
                 }
             }

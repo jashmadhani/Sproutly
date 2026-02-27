@@ -30,14 +30,12 @@ struct OneTapLogButton: View {
                     )
                     .frame(width: 36, height: 36)
 
-                if !isCompleted {
-                    Circle()
-                        .stroke(
-                            Theme.accentBlue(for: nightMode).opacity(0.3),
-                            lineWidth: 1.5
-                        )
-                        .frame(width: 36, height: 36)
-                }
+                Circle()
+                    .stroke(
+                        Theme.accentBlue(for: nightMode).opacity(isCompleted ? 0 : 0.3),
+                        lineWidth: 1.5
+                    )
+                    .frame(width: 36, height: 36)
 
                 Image(systemName: isCompleted ? "checkmark" : "plus")
                     .font(.system(size: 14, weight: .semibold))
@@ -45,6 +43,7 @@ struct OneTapLogButton: View {
                         isCompleted ? .white : Theme.accentBlue(for: nightMode)
                     )
             }
+            .animation(.easeOut(duration: 0.15), value: isCompleted)
             .contentShape(Circle())
         }
         .buttonStyle(.plain)

@@ -212,20 +212,11 @@ extension View {
             .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius, style: .continuous))
             .shadow(
                 color: nightMode
-                    ? Color.black.opacity(0.35)
-                    : Theme.dayText.opacity(0.06),
-                radius: nightMode ? 10 : 20,
+                    ? Color.black.opacity(0.25)
+                    : Theme.dayText.opacity(0.05),
+                radius: nightMode ? 6 : 10,
                 x: 0,
-                y: nightMode ? 5 : 8
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.cardCornerRadius, style: .continuous)
-                    .stroke(
-                        nightMode
-                            ? Color.white.opacity(0.08)
-                            : Theme.dayText.opacity(0.04),
-                        lineWidth: 1
-                    )
+                y: nightMode ? 3 : 4
             )
     }
     
@@ -279,52 +270,34 @@ struct SoftCapsuleStyle: ButtonStyle {
 
 struct AmbientBackground: View {
     let nightMode: Bool
-    @State private var animate = false
-    
+
     var body: some View {
         ZStack {
             // Base background
             Theme.background(for: nightMode)
                 .ignoresSafeArea()
-            
-            // Soft ambient blob 1 — blue tint
+
+            // Static ambient blob 1 — blue tint
             Circle()
-                .fill(Theme.accentBlue(for: nightMode).opacity(nightMode ? 0.08 : 0.12))
+                .fill(Theme.accentBlue(for: nightMode).opacity(nightMode ? 0.06 : 0.10))
                 .frame(width: 280, height: 280)
-                .blur(radius: 80)
-                .offset(
-                    x: animate ? -100 : -130,
-                    y: animate ? -180 : -220
-                )
-            
-            // Soft ambient blob 2 — green tint
+                .blur(radius: 60)
+                .offset(x: -115, y: -200)
+
+            // Static ambient blob 2 — green tint
             Circle()
-                .fill(Theme.growthGreen(for: nightMode).opacity(nightMode ? 0.06 : 0.10))
+                .fill(Theme.growthGreen(for: nightMode).opacity(nightMode ? 0.05 : 0.08))
                 .frame(width: 300, height: 300)
-                .blur(radius: 80)
-                .offset(
-                    x: animate ? 110 : 140,
-                    y: animate ? 200 : 250
-                )
-            
-            // Soft ambient blob 3 — yellow warmth
+                .blur(radius: 60)
+                .offset(x: 125, y: 225)
+
+            // Static ambient blob 3 — yellow warmth (no blur, just opacity)
             Circle()
-                .fill(Theme.encourageYellow(for: nightMode).opacity(nightMode ? 0.04 : 0.08))
+                .fill(Theme.encourageYellow(for: nightMode).opacity(nightMode ? 0.03 : 0.06))
                 .frame(width: 200, height: 200)
-                .blur(radius: 70)
-                .offset(
-                    x: animate ? 60 : 90,
-                    y: animate ? -40 : 20
-                )
+                .offset(x: 75, y: -10)
         }
         .ignoresSafeArea()
-        .onAppear {
-            withAnimation(
-                .easeInOut(duration: 8)
-                .repeatForever(autoreverses: true)
-            ) {
-                animate = true
-            }
-        }
+        .drawingGroup()
     }
 }
