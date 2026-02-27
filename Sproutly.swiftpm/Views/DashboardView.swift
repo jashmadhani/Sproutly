@@ -94,22 +94,40 @@ struct DashboardView: View {
 
     // MARK: - Development Focus Engine
 
-    /// Incomplete milestones from age brackets the child has clearly passed
-    /// (child age is at least 3 months beyond the bracket).
-    private var focusMilestones: [Milestone] {
+    /// Milestones flagged for review: incomplete and child age ≥ milestone age + 2 months.
+    /// Uses 2-month threshold per AAP/CDC developmental surveillance guidance.
+    private var flaggedMilestones: [Milestone] {
         milestones.filter { milestone in
-            !milestone.isCompleted && correctedAge >= milestone.ageMonth + 3
+            !milestone.isCompleted && correctedAge >= milestone.ageMonth + 2
         }
     }
 
-    /// True when there are meaningful previous-bracket gaps worth surfacing.
+    /// True when there are meaningful developmental gaps worth surfacing.
     private var hasDevelopmentFocus: Bool {
-        focusMilestones.count >= 2
+        flaggedMilestones.count >= 2
     }
 
-    /// Count of domains with focus milestones, for copy specificity.
-    private var focusDomainCount: Int {
-        Set(focusMilestones.map(\.category)).count
+    /// Tiered concern level based on count and domain spread.
+    private var concernLevel: ConcernLevel {
+        let domainCount = Set(flaggedMilestones.map(\.category)).count
+        if flaggedMilestones.count >= 3 || domainCount >= 2 {
+            return .needsAttention
+        }
+        return .reviewSuggested
+    }
+
+    /// Groups flagged milestones by domain for the breakdown display.
+    private var domainConcerns: [DomainConcern] {
+        let grouped = Dictionary(grouping: flaggedMilestones, by: \.category)
+        return grouped.compactMap { categoryRaw, milestones in
+            guard let category = MilestoneCategory(rawValue: categoryRaw) else { return nil }
+            return DomainConcern(
+                id: categoryRaw,
+                category: category,
+                milestoneCount: milestones.count
+            )
+        }
+        .sorted { $0.milestoneCount > $1.milestoneCount }
     }
 
     // MARK: - Body
@@ -431,43 +449,12 @@ struct DashboardView: View {
     // =========================================================================
 
     private var developmentFocusCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                Image(systemName: "eyes")
-                    .font(.system(size: 16))
-                    .foregroundStyle(theme.isNightMode
-                        ? Theme.encourageYellow(for: true)
-                        : Theme.encourageYellow(for: false)
-                    )
-
-                Text("Development Focus")
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(theme.text)
-            }
-
-            Text(focusCopyText)
-                .font(.subheadline)
-                .foregroundStyle(theme.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            HStack(spacing: 6) {
-                Image(systemName: "info.circle")
-                    .font(.caption)
-                    .foregroundStyle(theme.textSecondary.opacity(0.7))
-                Text("\(focusMilestones.count) earlier milestones across \(focusDomainCount) area\(focusDomainCount == 1 ? "" : "s")")
-                    .font(.caption)
-                    .foregroundStyle(theme.textSecondary.opacity(0.7))
-            }
-        }
-        .warmCard(nightMode: theme.isNightMode)
-    }
-
-    private var focusCopyText: String {
-        if focusMilestones.count >= 5 {
-            return "Some earlier milestones are still unfolding. Many children progress at their own pace — it can be helpful to revisit these skills gently and discuss them at your next well-child visit."
-        } else {
-            return "A few earlier milestones are still developing. This is very common. Continue observing through everyday play and routines — every child grows uniquely."
-        }
+        DevelopmentFocusView(
+            concernLevel: concernLevel,
+            domainConcerns: domainConcerns,
+            totalFlagged: flaggedMilestones.count,
+            nightMode: theme.isNightMode
+        )
     }
 }
 
