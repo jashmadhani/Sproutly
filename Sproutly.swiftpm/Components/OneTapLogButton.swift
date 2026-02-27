@@ -8,35 +8,20 @@
 import SwiftUI
 
 /// Gentle one-tap button to mark milestones complete.
-/// Uses soft scale animation and haptic feedback.
+/// Fires haptic + action synchronously — zero animation delay.
 struct OneTapLogButton: View {
     var isCompleted: Bool
     var nightMode: Bool = false
     var action: () -> Void
-    
-    @State private var isPressed = false
-    
+
     var body: some View {
         Button {
 #if os(iOS)
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
 #endif
-            
-            withAnimation(.spring(response: 0.25, dampingFraction: 0.6)) {
-                isPressed = true
-            }
-            
             action()
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                withAnimation(.spring(response: 0.3)) {
-                    isPressed = false
-                }
-            }
         } label: {
             ZStack {
-                // Filled circle
                 Circle()
                     .fill(
                         isCompleted
@@ -44,16 +29,7 @@ struct OneTapLogButton: View {
                             : Theme.accentBlue(for: nightMode).opacity(0.12)
                     )
                     .frame(width: 36, height: 36)
-                    .shadow(
-                        color: isCompleted
-                            ? Theme.growthGreen(for: nightMode).opacity(0.25)
-                            : .clear,
-                        radius: 4,
-                        x: 0,
-                        y: 2
-                    )
-                
-                // Outer ring when not completed
+
                 if !isCompleted {
                     Circle()
                         .stroke(
@@ -62,17 +38,14 @@ struct OneTapLogButton: View {
                         )
                         .frame(width: 36, height: 36)
                 }
-                
-                // Icon
+
                 Image(systemName: isCompleted ? "checkmark" : "plus")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(
-                        isCompleted
-                            ? .white
-                            : Theme.accentBlue(for: nightMode)
+                        isCompleted ? .white : Theme.accentBlue(for: nightMode)
                     )
             }
-            .scaleEffect(isPressed ? 0.88 : 1.0)
+            .contentShape(Circle())
         }
         .buttonStyle(.plain)
     }

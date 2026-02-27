@@ -269,8 +269,8 @@ struct MilestonesView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(milestone.title)
                     .font(.subheadline)
-                    .foregroundStyle(theme.text)
-                    .strikethrough(milestone.isCompleted, color: theme.green.opacity(0.4))
+                    .foregroundStyle(milestone.isCompleted ? theme.textSecondary : theme.text)
+                    .strikethrough(milestone.isCompleted, color: theme.green.opacity(0.8))
 
                 Text(milestone.expectedAgeText)
                     .font(.caption2)

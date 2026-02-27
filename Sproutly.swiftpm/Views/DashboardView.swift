@@ -206,24 +206,19 @@ struct DashboardView: View {
     // =========================================================================
 
     private var headerCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 6) {
             Text(greetingText)
                 .font(.subheadline)
                 .foregroundStyle(theme.textSecondary)
 
-            Text("Little Steps")
+            Text(childProfile.name.isEmpty ? "Little one" : childProfile.name)
                 .font(.system(.title2, design: .rounded))
                 .fontWeight(.bold)
                 .foregroundStyle(theme.text)
 
-            HStack(spacing: 6) {
-                Image(systemName: "calendar")
-                    .font(.caption)
-                    .foregroundStyle(theme.textSecondary)
-                Text("\(childProfile.name.isEmpty ? "Your little one" : childProfile.name) · \(childProfile.humanReadableAge)")
-                    .font(.callout)
-                    .foregroundStyle(theme.textSecondary)
-            }
+            Text("You're \(childProfile.humanReadableAge)!")
+                .font(.callout)
+                .foregroundStyle(theme.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.bottom, 4)
@@ -333,7 +328,7 @@ struct DashboardView: View {
                         .frame(height: 6)
 
                     Capsule()
-                        .fill(domainColor.opacity(0.7))
+                        .fill(domainColor.opacity(0.8))
                         .frame(width: max(0, geo.size.width * progress), height: 6)
                         .animation(.easeOut(duration: 0.3), value: progress)
                 }
@@ -343,11 +338,11 @@ struct DashboardView: View {
         .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(domainColor.opacity(theme.isNightMode ? 0.12 : 0.10))
+                .fill(domainColor.opacity(theme.isNightMode ? 0.16 : 0.14))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(domainColor.opacity(0.10), lineWidth: 1)
+                .stroke(domainColor.opacity(0.12), lineWidth: 1)
         )
     }
 

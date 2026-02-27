@@ -71,27 +71,24 @@ struct MainTabView: View {
                 let isSelected = selectedTab == tab
                 Button {
 #if os(iOS)
-                    let generator = UISelectionFeedbackGenerator()
-                    generator.selectionChanged()
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
 #endif
                     selectedTab = tab
                 } label: {
                     VStack(spacing: 5) {
                         Image(systemName: isSelected ? tab.selectedIcon : tab.icon)
-                            .font(.system(size: 22, weight: isSelected ? .semibold : .regular))
-                            .scaleEffect(isSelected ? 1.08 : 1.0)
-                            .animation(.easeInOut(duration: 0.2), value: selectedTab)
+                            .font(.system(size: 20))
+                            .frame(width: 28, height: 24)
 
                         Text(tab.rawValue)
-                            .font(.system(size: 11, weight: isSelected ? .bold : .medium, design: .rounded))
+                            .font(.system(size: 11, weight: isSelected ? .semibold : .regular, design: .rounded))
                     }
                     .foregroundStyle(
-                        isSelected
-                            ? theme.blue
-                            : theme.textSecondary.opacity(0.8)
+                        isSelected ? theme.blue : theme.textSecondary.opacity(0.7)
                     )
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 44)
+                    .transaction { $0.animation = nil }
                 }
                 .buttonStyle(.plain)
             }

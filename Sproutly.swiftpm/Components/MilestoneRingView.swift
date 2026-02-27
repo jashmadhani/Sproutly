@@ -14,46 +14,52 @@ struct MilestoneRingView: View {
     var completedCount: Int
     var totalCount: Int
     var nightMode: Bool = false
-    
+
     @State private var animatedProgress: Double = 0
-    
+
+    private var ringBlue: Color { Theme.accentBlue(for: nightMode) }
+    private var ringGreen: Color { Theme.growthGreen(for: nightMode) }
+
     var body: some View {
         ZStack {
-            // Background ring — soft tint
+            // Background track — stronger contrast
             Circle()
                 .stroke(
-                    Theme.accentBlue(for: nightMode).opacity(0.12),
-                    lineWidth: 10
+                    ringBlue.opacity(nightMode ? 0.15 : 0.18),
+                    lineWidth: 12
                 )
-            
-            // Progress arc — blue to green gradient
+
+            // Progress arc — rich 3-stop gradient
             Circle()
                 .trim(from: 0, to: animatedProgress)
                 .stroke(
                     AngularGradient(
                         gradient: Gradient(colors: [
-                            Theme.accentBlue(for: nightMode),
-                            Theme.growthGreen(for: nightMode)
+                            ringBlue,
+                            Color(red: 0.2, green: 0.7, blue: 0.75), // teal midpoint
+                            ringGreen
                         ]),
                         center: .center,
                         startAngle: .degrees(0),
                         endAngle: .degrees(360)
                     ),
-                    style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                    style: StrokeStyle(lineWidth: 12, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
                 .shadow(
-                    color: Theme.accentBlue(for: nightMode).opacity(0.15),
-                    radius: 4
+                    color: ringBlue.opacity(0.2),
+                    radius: 6,
+                    x: 0,
+                    y: 0
                 )
         }
         .onAppear {
-            withAnimation(.easeInOut(duration: 0.8)) {
+            withAnimation(.easeOut(duration: 0.6)) {
                 animatedProgress = progress
             }
         }
         .onChange(of: progress) { _, newValue in
-            withAnimation(.easeInOut(duration: 0.4)) {
+            withAnimation(.easeOut(duration: 0.25)) {
                 animatedProgress = newValue
             }
         }
