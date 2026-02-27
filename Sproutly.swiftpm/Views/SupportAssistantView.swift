@@ -48,6 +48,8 @@ struct SupportAssistantView: View {
                 
                 Spacer()
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Ask Sproutly, share a question or concern")
             
             // Input field
             HStack(spacing: 10) {
@@ -56,6 +58,8 @@ struct SupportAssistantView: View {
                     .font(.subheadline)
                     .foregroundStyle(Theme.textPrimary(for: nightMode))
                     .focused($isInputFocused)
+                    .accessibilityLabel("Question input")
+                    .accessibilityHint("Type your question about your child's development")
                 
                 if !question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     Button {
@@ -68,6 +72,7 @@ struct SupportAssistantView: View {
                     }
                     .buttonStyle(.plain)
                     .transition(.scale.combined(with: .opacity))
+                    .accessibilityLabel("Send question")
                 }
             }
             .padding(14)
@@ -127,6 +132,8 @@ struct SupportAssistantView: View {
                 )
                 .opacity(responseOpacity)
                 .animation(.easeInOut(duration: 0.4), value: responseOpacity)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Sproutly's response")
             }
         }
         .warmCard(nightMode: nightMode)
@@ -159,9 +166,126 @@ struct AssistantResponse {
     let pediatricNote: String?
 }
 
+// MARK: - Concern Intensity
+
+/// How strongly the parent's question expresses worry.
+/// Used to decide whether to surface the pediatric note unconditionally.
+enum ConcernIntensity {
+    case none        // No concern-modifiers detected
+    case mild        // 1 concern-modifier
+    case significant // 2+ concern-modifiers — always show pediatric note
+}
+
+// MARK: - Weighted Domain Scorer
+
+/// Replaces naive `q.contains()` with weighted keyword scoring.
+/// Domain-specific words score +2 base; when preceded by negative sentiment
+/// within a 3-word window they score +3 (genuine parental concern).
+struct WeightedDomainScorer {
+    
+    /// (keyword, domain, base weight)
+    static let keywords: [(String, MilestoneCategory, Int)] = [
+        // Gross Motor
+        ("walk",    .grossMotor, 2), ("crawl",   .grossMotor, 2),
+        ("stand",   .grossMotor, 2), ("run",     .grossMotor, 2),
+        ("sit",     .grossMotor, 2), ("roll",    .grossMotor, 2),
+        ("step",    .grossMotor, 2), ("climb",   .grossMotor, 2),
+        ("jump",    .grossMotor, 2), ("move",    .grossMotor, 2),
+        ("motor",   .grossMotor, 2), ("balance", .grossMotor, 2),
+        
+        // Fine Motor
+        ("grab",    .fineMotor, 2), ("pinch",   .fineMotor, 2),
+        ("stack",   .fineMotor, 2), ("draw",    .fineMotor, 2),
+        ("write",   .fineMotor, 2), ("scissor", .fineMotor, 2),
+        ("hand",    .fineMotor, 2), ("finger",  .fineMotor, 2),
+        ("hold",    .fineMotor, 2), ("spoon",   .fineMotor, 2),
+        ("fork",    .fineMotor, 2), ("grasp",   .fineMotor, 2),
+        
+        // Language
+        ("talk",     .language, 2), ("speak",    .language, 2),
+        ("word",     .language, 2), ("babbl",    .language, 2),
+        ("speech",   .language, 2), ("language", .language, 2),
+        ("say",      .language, 2), ("sound",    .language, 2),
+        ("sentence", .language, 2), ("point",    .language, 2),
+        ("quiet",    .language, 2), ("verbal",   .language, 2),
+        
+        // Cognitive
+        ("think",      .cognitive, 2), ("learn",      .cognitive, 2),
+        ("puzzle",     .cognitive, 2), ("count",      .cognitive, 2),
+        ("color",      .cognitive, 2), ("shape",      .cognitive, 2),
+        ("pretend",    .cognitive, 2), ("play",       .cognitive, 2),
+        ("understand", .cognitive, 2), ("know",       .cognitive, 2),
+        ("memory",     .cognitive, 2), ("attention",  .cognitive, 2),
+        
+        // Social-Emotional
+        ("social",     .socialEmotional, 2), ("friend",     .socialEmotional, 2),
+        ("emotion",    .socialEmotional, 2), ("cry",        .socialEmotional, 2),
+        ("tantrum",    .socialEmotional, 2), ("share",      .socialEmotional, 2),
+        ("anxious",    .socialEmotional, 2), ("scared",     .socialEmotional, 2),
+        ("behav",      .socialEmotional, 2), ("aggressive", .socialEmotional, 2),
+        ("hit",        .socialEmotional, 2), ("shy",        .socialEmotional, 2),
+        ("angry",      .socialEmotional, 2), ("bite",       .socialEmotional, 2),
+    ]
+    
+    /// Words that indicate parental concern / negative sentiment
+    static let negativeModifiers: Set<String> = [
+        "not", "isn't", "hasn't", "never", "still", "worried",
+        "concerned", "delayed", "behind", "struggling", "can't",
+        "doesn't", "won't", "unable", "slow", "late", "lacking"
+    ]
+    
+    /// Scoring result
+    struct Result {
+        let domain: MilestoneCategory?
+        let intensity: ConcernIntensity
+    }
+    
+    /// Tokenize, score, and return the best domain + concern intensity.
+    static func score(question: String) -> Result {
+        // Tokenize: split on non-alphanumeric, lowercased
+        let tokens = question.lowercased()
+            .components(separatedBy: CharacterSet.alphanumerics.inverted)
+            .filter { !$0.isEmpty }
+        
+        var scores: [MilestoneCategory: Int] = [:]
+        var concernModifierCount = 0
+        
+        for (index, token) in tokens.enumerated() {
+            // Check if this token is a negative modifier
+            if negativeModifiers.contains(token) {
+                concernModifierCount += 1
+            }
+            
+            // Check against domain keywords
+            for (keyword, category, baseWeight) in keywords {
+                if token.contains(keyword) {
+                    // Look back up to 3 tokens for negative modifiers
+                    let windowStart = max(0, index - 3)
+                    let precedingTokens = tokens[windowStart..<index]
+                    let hasNegativeContext = precedingTokens.contains { negativeModifiers.contains($0) }
+                    
+                    let weight = hasNegativeContext ? baseWeight + 1 : baseWeight
+                    scores[category, default: 0] += weight
+                }
+            }
+        }
+        
+        let topDomain = scores.max(by: { $0.value < $1.value })?.key
+        
+        let intensity: ConcernIntensity
+        switch concernModifierCount {
+        case 0:     intensity = .none
+        case 1:     intensity = .mild
+        default:    intensity = .significant
+        }
+        
+        return Result(domain: topDomain, intensity: intensity)
+    }
+}
+
 // MARK: - Rule-Based Response Engine
 
-/// On-device response engine using keyword matching + domain context.
+/// On-device response engine using weighted keyword scoring + domain context.
 /// Randomizes phrasing and branches by age.
 enum AssistantEngine {
     
@@ -171,8 +295,10 @@ enum AssistantEngine {
         milestones: [Milestone]
     ) -> AssistantResponse {
         
-        // 1. Detect domain from keywords
-        let domain = detectDomain(from: question)
+        // 1. Score question with weighted analysis
+        let scoreResult = WeightedDomainScorer.score(question: question)
+        let domain = scoreResult.domain
+        let intensity = scoreResult.intensity
         
         // 2. Check completions for that domain
         let domainMilestones = milestones.filter {
@@ -180,61 +306,28 @@ enum AssistantEngine {
         }
         let total = domainMilestones.count
         let completed = domainMilestones.filter(\.isCompleted).count
-        _ = total - completed
         
-        // 3. Determine concern level
-        // If unobserved > 50% of age-appropriate milestones, higher concern
+        // 3. Determine concern level from milestones
         let isConcern = total > 0 && (Double(completed) / Double(total) < 0.5)
         
-        // 4. Generate response
+        // 4. Significant intensity always triggers pediatric note
+        let forcePediatric = intensity == .significant
+        
+        // 5. Generate response
         switch domain {
         case .grossMotor:
-            return grossMotorResponse(age: correctedAge, isConcern: isConcern)
+            return grossMotorResponse(age: correctedAge, isConcern: isConcern || forcePediatric)
         case .fineMotor:
-            return fineMotorResponse(age: correctedAge, isConcern: isConcern)
+            return fineMotorResponse(age: correctedAge, isConcern: isConcern || forcePediatric)
         case .language:
-            return languageResponse(age: correctedAge, isConcern: isConcern)
+            return languageResponse(age: correctedAge, isConcern: isConcern || forcePediatric)
         case .cognitive:
-            return cognitiveResponse(age: correctedAge, isConcern: isConcern)
+            return cognitiveResponse(age: correctedAge, isConcern: isConcern || forcePediatric)
         case .socialEmotional:
-            return socialEmotionalResponse(age: correctedAge, isConcern: isConcern)
+            return socialEmotionalResponse(age: correctedAge, isConcern: isConcern || forcePediatric)
         case .none:
             return generalResponse(age: correctedAge)
         }
-    }
-    
-    // MARK: - Domain Detection
-    
-    private static func detectDomain(from question: String) -> MilestoneCategory? {
-        let q = question.lowercased()
-        
-        if q.contains("walk") || q.contains("crawl") || q.contains("stand") || q.contains("run")
-            || q.contains("sit") || q.contains("roll") || q.contains("step") || q.contains("climb")
-            || q.contains("jump") || q.contains("move") || q.contains("motor") {
-            return .grossMotor
-        }
-        if q.contains("grab") || q.contains("pinch") || q.contains("stack") || q.contains("draw")
-            || q.contains("write") || q.contains("scissor") || q.contains("hand") || q.contains("finger")
-            || q.contains("hold") || q.contains("spoon") || q.contains("fork") {
-            return .fineMotor
-        }
-        if q.contains("talk") || q.contains("speak") || q.contains("word") || q.contains("babbl")
-            || q.contains("speech") || q.contains("language") || q.contains("say") || q.contains("sound")
-            || q.contains("sentence") || q.contains("name") || q.contains("point") || q.contains("quiet") {
-            return .language
-        }
-        if q.contains("think") || q.contains("learn") || q.contains("puzzle") || q.contains("count")
-            || q.contains("color") || q.contains("shape") || q.contains("pretend") || q.contains("play")
-            || q.contains("understand") || q.contains("know") || q.contains("memory") {
-            return .cognitive
-        }
-        if q.contains("social") || q.contains("friend") || q.contains("emotion") || q.contains("cry")
-            || q.contains("tantrum") || q.contains("share") || q.contains("anxious") || q.contains("scared")
-            || q.contains("behav") || q.contains("aggressive") || q.contains("hit") || q.contains("shy") {
-            return .socialEmotional
-        }
-        
-        return nil
     }
     
     // MARK: - Domain Responses

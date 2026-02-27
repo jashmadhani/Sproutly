@@ -130,6 +130,7 @@ struct GrowthInsightsView: View {
                 }
             }
             .buttonStyle(.plain)
+            .accessibilityHint(expandedSection == id ? "Double tap to collapse" : "Double tap to expand")
 
             if expandedSection == id {
                 Text(body)

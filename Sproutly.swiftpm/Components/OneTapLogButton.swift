@@ -12,6 +12,7 @@ import SwiftUI
 struct OneTapLogButton: View {
     var isCompleted: Bool
     var nightMode: Bool = false
+    var accessibilityTitle: String = ""
     var action: () -> Void
 
     var body: some View {
@@ -47,6 +48,13 @@ struct OneTapLogButton: View {
             .contentShape(Circle())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(
+            accessibilityTitle.isEmpty
+                ? (isCompleted ? "Completed" : "Mark as complete")
+                : (isCompleted ? "Unmark \(accessibilityTitle) as complete" : "Mark \(accessibilityTitle) as complete")
+        )
+        .accessibilityHint(isCompleted ? "Double tap to unmark" : "Double tap to mark complete")
+        .accessibilityAddTraits(.isButton)
     }
 }
 

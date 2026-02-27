@@ -32,6 +32,9 @@ final class Milestone: Identifiable {
     /// Warm, encouraging tip for parents
     var tips: String
     
+    /// Optional short memory note added when marking complete
+    var completionNote: String
+    
     // MARK: - Initializer
     
     init(
@@ -41,7 +44,8 @@ final class Milestone: Identifiable {
         ageMonth: Int,
         isCompleted: Bool = false,
         dateCompleted: Date? = nil,
-        tips: String = ""
+        tips: String = "",
+        completionNote: String = ""
     ) {
         self.id = id
         self.title = title
@@ -50,6 +54,7 @@ final class Milestone: Identifiable {
         self.isCompleted = isCompleted
         self.dateCompleted = dateCompleted
         self.tips = tips
+        self.completionNote = completionNote
     }
     
     // MARK: - Computed

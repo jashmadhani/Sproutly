@@ -228,6 +228,9 @@ struct DashboardView: View {
         }
         .padding(.vertical, 20)
         .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Milestone progress")
+        .accessibilityValue("\(currentStageCompleted) of \(currentStageTotal) milestones completed for \(targetAgeMonth) months")
     }
 
     // =========================================================================
@@ -298,6 +301,8 @@ struct DashboardView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(domainColor.opacity(theme.isNightMode ? 0.25 : 0.22))
         )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(category.gentleLabel), \(stats.completed) of \(stats.total) completed")
     }
 
     // =========================================================================
@@ -342,6 +347,13 @@ struct DashboardView: View {
                                 Text(date, format: .dateTime.month(.abbreviated).day())
                                     .font(.caption)
                                     .foregroundStyle(theme.textSecondary)
+                            }
+
+                            if !milestone.completionNote.isEmpty {
+                                Text(milestone.completionNote)
+                                    .font(.caption2)
+                                    .foregroundStyle(theme.textSecondary)
+                                    .lineLimit(1)
                             }
                         }
 

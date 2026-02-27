@@ -172,6 +172,8 @@ struct DevelopmentFocusView: View {
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
                         .fill(Theme.textSecondary(for: nightMode).opacity(0.04))
                 )
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("\(concern.category.gentleLabel), \(concern.summary)")
             }
         }
     }
@@ -226,6 +228,7 @@ struct DevelopmentFocusView: View {
             }
         }
         .buttonStyle(.plain)
+        .accessibilityHint(showEarlyIntervention ? "Double tap to collapse" : "Double tap to expand")
     }
 
     // MARK: - Early Intervention Panel

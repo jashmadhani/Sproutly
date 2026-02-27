@@ -9,51 +9,89 @@ import SwiftUI
 
 /// Informational screening reminder cards aligned with AAP guidance.
 /// Non-alarming — explains why screening helps.
+/// Shows active screenings + overdue screenings parents may have missed.
 struct ScreeningCardView: View {
     let correctedAge: Int
     let nightMode: Bool
     
-    /// Active screening checkpoints for the current age
+    /// Currently active screening checkpoints (within window)
     private var activeScreenings: [ScreeningCheckpoint] {
         ScreeningCheckpoint.allCheckpoints.filter { cp in
-            correctedAge >= cp.ageMonth && correctedAge <= cp.ageMonth + 2
+            correctedAge >= cp.ageMonth && correctedAge <= cp.ageMonth + 4
+        }
+    }
+    
+    /// Overdue screenings the parent may have missed (past the active window
+    /// but within 8 months so still worth mentioning at next visit)
+    private var overdueScreenings: [ScreeningCheckpoint] {
+        ScreeningCheckpoint.allCheckpoints.filter { cp in
+            correctedAge > cp.ageMonth + 4 && correctedAge <= cp.ageMonth + 8
         }
     }
     
     var body: some View {
+        // Active screenings — standard blue style
         ForEach(activeScreenings) { screening in
-            HStack(alignment: .top, spacing: 14) {
-                ZStack {
-                    Circle()
-                        .fill(Theme.accentBlue(for: nightMode).opacity(0.12))
-                        .frame(width: 40, height: 40)
-                    
-                    Image(systemName: screening.icon)
-                        .font(.system(size: 18))
-                        .foregroundStyle(Theme.accentBlue(for: nightMode))
-                }
+            screeningCard(screening, isOverdue: false)
+        }
+        
+        // Overdue screenings — softer visual, "Worth discussing" tone
+        ForEach(overdueScreenings) { screening in
+            screeningCard(screening, isOverdue: true)
+        }
+    }
+    
+    private func screeningCard(_ screening: ScreeningCheckpoint, isOverdue: Bool) -> some View {
+        let cardColor = isOverdue
+            ? Theme.encourageYellow(for: nightMode)
+            : Theme.accentBlue(for: nightMode)
+        
+        return HStack(alignment: .top, spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(cardColor.opacity(0.12))
+                    .frame(width: 40, height: 40)
                 
-                VStack(alignment: .leading, spacing: 6) {
+                Image(systemName: screening.icon)
+                    .font(.system(size: 18))
+                    .foregroundStyle(cardColor)
+            }
+            
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 6) {
                     Text(screening.title)
                         .font(.caption.weight(.medium))
                         .foregroundStyle(Theme.textPrimary(for: nightMode))
                     
-                    Text(screening.body)
-                        .font(.caption2)
-                        .foregroundStyle(Theme.textSecondary(for: nightMode))
-                        .fixedSize(horizontal: false, vertical: true)
+                    if isOverdue {
+                        Text("Past due")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(Theme.encourageYellow(for: nightMode))
+                    }
                 }
                 
-                Spacer(minLength: 0)
+                Text(isOverdue
+                     ? "Worth discussing at your next visit — it's never too late to bring this up with your pediatrician."
+                     : screening.body)
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textSecondary(for: nightMode))
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(16)
-            .background(Theme.accentBlue(for: nightMode).opacity(nightMode ? 0.06 : 0.08))
-            .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.cardCornerRadius, style: .continuous)
-                    .stroke(Theme.accentBlue(for: nightMode).opacity(0.1), lineWidth: 1)
-            )
+            
+            Spacer(minLength: 0)
         }
+        .padding(16)
+        .background(cardColor.opacity(isOverdue ? (nightMode ? 0.04 : 0.05) : (nightMode ? 0.06 : 0.08)))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.cardCornerRadius, style: .continuous)
+                .stroke(cardColor.opacity(isOverdue ? 0.15 : 0.1), lineWidth: 1)
+        )
+        .opacity(isOverdue ? 0.85 : 1.0)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(isOverdue
+            ? "Past due: \(screening.title). Worth discussing at your next visit."
+            : screening.title)
     }
 }
 

@@ -135,6 +135,8 @@ struct SettingsView: View {
             Toggle("", isOn: $tm.isNightMode)
                 .labelsHidden()
                 .tint(theme.blue)
+                .accessibilityLabel("Night Mode")
+                .accessibilityHint("Reduce brightness for quiet evenings")
         }
         .warmCard(nightMode: theme.isNightMode)
         .animation(.easeInOut(duration: 0.4), value: theme.isNightMode)
@@ -208,6 +210,8 @@ struct SettingsView: View {
                 }
             }
             .tint(theme.green)
+            .accessibilityLabel("Born Before 37 Weeks")
+            .accessibilityHint("Adjusts milestones for premature birth")
             .onChange(of: childProfile.isPremature) { _, _ in
                 childProfile.save()
             }
@@ -252,6 +256,8 @@ struct SettingsView: View {
                 }
             }
             .warmCard(nightMode: theme.isNightMode)
+            .accessibilityLabel("Reset Milestone Progress")
+            .accessibilityHint("Unmarks all milestones, keeps profile")
             
             Button {
                 showDeleteAlert = true
@@ -266,6 +272,8 @@ struct SettingsView: View {
                 }
             }
             .warmCard(nightMode: theme.isNightMode)
+            .accessibilityLabel("Delete All Data")
+            .accessibilityHint("Removes all data and returns to welcome screen")
         }
     }
     
@@ -277,6 +285,7 @@ struct SettingsView: View {
             for milestone in allMilestones {
                 milestone.isCompleted = false
                 milestone.dateCompleted = nil
+                milestone.completionNote = ""
             }
             try? modelContext.save()
         }

@@ -86,6 +86,8 @@ struct MainTabView: View {
                     .transaction { $0.animation = nil }
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(tab.rawValue)
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }
         .padding(.horizontal, 12)

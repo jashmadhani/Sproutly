@@ -28,6 +28,10 @@ struct MilestonesView: View {
 
     @State private var selectedFilter: MilestoneFilter = .thisStage
     @State private var expandedDomains: Set<String> = Set(MilestoneCategory.allCases.map(\.rawValue))
+    
+    // Priority 3: Completion note sheet state
+    @State private var milestoneForNote: Milestone? = nil
+    @State private var noteText: String = ""
 
     // MARK: - Derived Data
 
@@ -73,6 +77,11 @@ struct MilestonesView: View {
                 .padding(.bottom, 32)
             }
             .scrollDismissesKeyboard(.interactively)
+        }
+        .sheet(item: $milestoneForNote) { milestone in
+            completionNoteSheet(for: milestone)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
     }
 
@@ -121,6 +130,7 @@ struct MilestonesView: View {
         }
         .pickerStyle(.segmented)
         .padding(.horizontal, 4)
+        .accessibilityLabel("Milestone filter")
     }
 
     // =========================================================================
@@ -202,6 +212,8 @@ struct MilestonesView: View {
                 .padding(16)
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("\(category.gentleLabel), \(stats.completed) of \(stats.total)")
+            .accessibilityHint(isExpanded ? "Double tap to collapse" : "Double tap to expand")
 
             // Expanded milestone rows
             if isExpanded {
@@ -241,15 +253,25 @@ struct MilestonesView: View {
                 Text(milestone.expectedAgeText)
                     .font(.caption2)
                     .foregroundStyle(theme.textSecondary)
+
+                // Show completion note if present
+                if milestone.isCompleted && !milestone.completionNote.isEmpty {
+                    Text(milestone.completionNote)
+                        .font(.caption2)
+                        .foregroundStyle(theme.textSecondary.opacity(0.8))
+                        .lineLimit(1)
+                        .italic()
+                }
             }
 
             Spacer()
 
             OneTapLogButton(
                 isCompleted: milestone.isCompleted,
-                nightMode: theme.isNightMode
+                nightMode: theme.isNightMode,
+                accessibilityTitle: milestone.title
             ) {
-                toggleMilestone(milestone)
+                handleToggle(milestone)
             }
         }
         .padding(.vertical, 10)
@@ -262,6 +284,7 @@ struct MilestonesView: View {
                         : theme.text.opacity(0.02)
                 )
         )
+        .accessibilityElement(children: .combine)
     }
 
     // =========================================================================
@@ -285,15 +308,122 @@ struct MilestonesView: View {
     }
 
     // =========================================================================
+    // MARK: - Completion Note Sheet
+    // =========================================================================
+
+    private func completionNoteSheet(for milestone: Milestone) -> some View {
+        VStack(spacing: 20) {
+            // Header
+            VStack(spacing: 8) {
+                Image(systemName: "heart.circle.fill")
+                    .font(.system(size: 36))
+                    .foregroundStyle(theme.green)
+
+                Text("Moment Captured!")
+                    .font(.system(.title3, design: .rounded))
+                    .fontWeight(.bold)
+                    .foregroundStyle(theme.text)
+
+                Text(milestone.title)
+                    .font(.subheadline)
+                    .foregroundStyle(theme.textSecondary)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.top, 8)
+
+            // Note field
+            VStack(alignment: .leading, spacing: 8) {
+                Label("Add a memory", systemImage: "pencil.line")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(theme.blue)
+
+                TextField("What made this moment special? (optional)", text: $noteText, axis: .vertical)
+                    .lineLimit(1...3)
+                    .font(.subheadline)
+                    .foregroundStyle(theme.text)
+                    .padding(14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(theme.text.opacity(0.04))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(theme.blue.opacity(0.1), lineWidth: 1)
+                    )
+            }
+
+            // Buttons
+            HStack(spacing: 14) {
+                Button {
+                    // Skip — complete without note
+                    commitToggle(milestone, note: "")
+                    milestoneForNote = nil
+                    noteText = ""
+                } label: {
+                    Text("Skip")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(theme.textSecondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(theme.text.opacity(0.05))
+                        )
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    // Save with note
+                    commitToggle(milestone, note: noteText.trimmingCharacters(in: .whitespacesAndNewlines))
+                    milestoneForNote = nil
+                    noteText = ""
+                } label: {
+                    Text("Save Memory")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(theme.green)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(24)
+        .background(theme.isNightMode ? Theme.nightCard : Color.white)
+    }
+
+    // =========================================================================
     // MARK: - Actions
     // =========================================================================
 
-    private func toggleMilestone(_ milestone: Milestone) {
-        // Optimistic UI: update in memory instantly
-        milestone.isCompleted.toggle()
-        milestone.dateCompleted = milestone.isCompleted ? Date() : nil
+    /// Handles tap on the toggle button.
+    /// If marking complete → show note sheet first.
+    /// If uncompleting → toggle immediately and clear note.
+    private func handleToggle(_ milestone: Milestone) {
+        if milestone.isCompleted {
+            // Uncompleting — toggle immediately, clear note
+            milestone.isCompleted = false
+            milestone.dateCompleted = nil
+            milestone.completionNote = ""
+            saveContext()
+        } else {
+            // Completing — show note sheet (don't toggle yet)
+            milestoneForNote = milestone
+        }
+    }
 
-        // Async save — don't block the main thread
+    /// Called from the sheet to commit the completion with optional note.
+    private func commitToggle(_ milestone: Milestone, note: String) {
+        milestone.isCompleted = true
+        milestone.dateCompleted = Date()
+        milestone.completionNote = note
+        saveContext()
+    }
+
+    private func saveContext() {
         let ctx = modelContext
         Task.detached { @MainActor in
             try? ctx.save()
