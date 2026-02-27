@@ -277,27 +277,24 @@ struct AmbientBackground: View {
             Theme.background(for: nightMode)
                 .ignoresSafeArea()
 
-            // Static ambient blob 1 — blue tint
+            // Soft ambient blob 1 — blue tint (large + low opacity instead of blur)
             Circle()
-                .fill(Theme.accentBlue(for: nightMode).opacity(nightMode ? 0.06 : 0.10))
-                .frame(width: 280, height: 280)
-                .blur(radius: 60)
+                .fill(Theme.accentBlue(for: nightMode).opacity(nightMode ? 0.04 : 0.07))
+                .frame(width: 400, height: 400)
                 .offset(x: -115, y: -200)
 
-            // Static ambient blob 2 — green tint
+            // Soft ambient blob 2 — green tint
             Circle()
-                .fill(Theme.growthGreen(for: nightMode).opacity(nightMode ? 0.05 : 0.08))
-                .frame(width: 300, height: 300)
-                .blur(radius: 60)
+                .fill(Theme.growthGreen(for: nightMode).opacity(nightMode ? 0.03 : 0.06))
+                .frame(width: 420, height: 420)
                 .offset(x: 125, y: 225)
 
-            // Static ambient blob 3 — yellow warmth (no blur, just opacity)
+            // Soft ambient blob 3 — yellow warmth
             Circle()
-                .fill(Theme.encourageYellow(for: nightMode).opacity(nightMode ? 0.03 : 0.06))
-                .frame(width: 200, height: 200)
+                .fill(Theme.encourageYellow(for: nightMode).opacity(nightMode ? 0.02 : 0.05))
+                .frame(width: 300, height: 300)
                 .offset(x: 75, y: -10)
         }
         .ignoresSafeArea()
-        .drawingGroup()
     }
 }

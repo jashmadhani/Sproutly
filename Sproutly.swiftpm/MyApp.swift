@@ -55,21 +55,20 @@ struct ContentView: View {
     @Environment(ChildProfile.self) private var childProfile
     @Environment(ThemeManager.self) private var theme
     @Environment(\.modelContext) private var modelContext
+    @State private var hasSeeded = false
     
     var body: some View {
         Group {
             if !childProfile.hasCompletedOnboarding {
                 OnboardingView()
-                    .transition(.opacity)
             } else {
                 MainTabView()
-                    .transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.5), value: childProfile.hasCompletedOnboarding)
+        .transaction { $0.animation = nil }
         .task {
-            // Seed directly into the environment's context so all @Query
-            // properties instances immediately see the new data without needing remote notifications.
+            guard !hasSeeded else { return }
+            hasSeeded = true
             DataSeeder.seedIfNeeded(modelContext: modelContext)
         }
     }

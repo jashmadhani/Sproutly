@@ -25,23 +25,29 @@ struct OnboardingView: View {
     
     var body: some View {
         ZStack {
-            // Warm ambient background
-            AmbientBackground(nightMode: theme.isNightMode)
+            // Static warm background — no blur, no drawingGroup
+            theme.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 progressDots
                 
-                TabView(selection: $step) {
-                    welcomeStep.tag(0)
-                    howItWorksStep.tag(1)
-                    reassuranceStep.tag(2)
-                    profileStep.tag(3)
+                // Use ZStack with opacity instead of .id() so
+                // the profile step (and its TextField) is NEVER
+                // destroyed / recreated mid-interaction.
+                ZStack {
+                    welcomeStep
+                        .opacity(step == 0 ? 1 : 0)
+                        .allowsHitTesting(step == 0)
+                    howItWorksStep
+                        .opacity(step == 1 ? 1 : 0)
+                        .allowsHitTesting(step == 1)
+                    reassuranceStep
+                        .opacity(step == 2 ? 1 : 0)
+                        .allowsHitTesting(step == 2)
+                    profileStep
+                        .opacity(step == 3 ? 1 : 0)
+                        .allowsHitTesting(step == 3)
                 }
-#if os(iOS)
-                .tabViewStyle(.page(indexDisplayMode: .never))
-#else
-                .tabViewStyle(.automatic)
-#endif
                 
                 navigationButtons
             }
@@ -62,11 +68,11 @@ private extension OnboardingView {
                             : theme.blue.opacity(0.25)
                     )
                     .frame(width: i == step ? 24 : 8, height: 8)
-                    .animation(.spring(response: 0.4), value: step)
             }
         }
         .padding(.top, 60)
         .padding(.bottom, 20)
+        .animation(.easeInOut(duration: 0.2), value: step)
     }
 }
 
@@ -215,6 +221,7 @@ private extension OnboardingView {
                 }
 
                 VStack(alignment: .leading, spacing: 20) {
+                    // ── Name Field ──
                     VStack(alignment: .leading, spacing: 8) {
                         Label("Child's Name", systemImage: "heart.fill")
                             .font(.subheadline)
@@ -228,8 +235,11 @@ private extension OnboardingView {
                                     .fill(theme.text.opacity(0.05))
                             )
                             .foregroundStyle(theme.text)
+                            .textInputAutocapitalization(.words)
+                            .autocorrectionDisabled()
                     }
 
+                    // ── Birth Date ──
                     VStack(alignment: .leading, spacing: 8) {
                         Label("Birth Date", systemImage: "calendar")
                             .font(.subheadline)
@@ -241,6 +251,7 @@ private extension OnboardingView {
                             .tint(theme.blue)
                     }
 
+                    // ── Premature Toggle ──
                     Toggle(isOn: $isPremature) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Born Before 37 Weeks")
@@ -269,18 +280,19 @@ private extension OnboardingView {
 #endif
                             .frame(height: 100)
                         }
-                        .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                 }
                 .padding(24)
                 .warmCard(nightMode: theme.isNightMode)
-                .animation(.spring(response: 0.4), value: isPremature)
 
                 Spacer(minLength: 24)
             }
             .padding()
         }
         .scrollBounceBehavior(.basedOnSize)
+#if os(iOS)
+        .scrollDismissesKeyboard(.interactively)
+#endif
     }
     
     // Helper: Onboarding pill row
@@ -322,10 +334,9 @@ private extension OnboardingView {
             if step > 0 {
                 Button {
 #if os(iOS)
-                    let generator = UIImpactFeedbackGenerator(style: .light)
-                    generator.impactOccurred()
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
 #endif
-                    withAnimation(.spring(response: 0.4)) { step -= 1 }
+                    step -= 1
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "chevron.left")
@@ -340,19 +351,16 @@ private extension OnboardingView {
             
             Button {
 #if os(iOS)
-                let generator = UIImpactFeedbackGenerator(style: .light)
-                generator.impactOccurred()
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
 #endif
                 
                 if step == totalSteps - 1 {
-                    withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
-                        getStartedPressed = true
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    getStartedPressed = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                         completeOnboarding()
                     }
                 } else {
-                    withAnimation(.spring(response: 0.4)) { step += 1 }
+                    step += 1
                 }
             } label: {
                 HStack(spacing: 8) {
@@ -370,8 +378,7 @@ private extension OnboardingView {
                     nightMode: theme.isNightMode
                 )
             )
-            .scaleEffect(getStartedPressed ? 1.1 : 1.0)
-            .animation(.spring(response: 0.5, dampingFraction: 0.6), value: getStartedPressed)
+            .scaleEffect(getStartedPressed ? 1.05 : 1.0)
             .disabled(step == 3 && childName.isEmpty)
             .opacity(step == 3 && childName.isEmpty ? 0.5 : 1)
         }

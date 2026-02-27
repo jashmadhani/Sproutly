@@ -25,7 +25,7 @@ struct MilestoneRingView: View {
             // Background track — stronger contrast
             Circle()
                 .stroke(
-                    ringBlue.opacity(nightMode ? 0.15 : 0.18),
+                    ringBlue.opacity(nightMode ? 0.25 : 0.30),
                     lineWidth: 12
                 )
 
@@ -47,8 +47,8 @@ struct MilestoneRingView: View {
                 )
                 .rotationEffect(.degrees(-90))
                 .shadow(
-                    color: ringBlue.opacity(0.2),
-                    radius: 6,
+                    color: ringBlue.opacity(0.35),
+                    radius: 8,
                     x: 0,
                     y: 0
                 )

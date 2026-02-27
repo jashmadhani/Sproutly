@@ -185,10 +185,10 @@ struct DashboardView: View {
     private var greetingText: String {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
-        case 5..<12: return "Good morning"
-        case 12..<17: return "Good afternoon"
-        case 17..<21: return "Good evening"
-        default: return "Good night"
+        case 5..<12: return "Good Morning"
+        case 12..<17: return "Good Afternoon"
+        case 17..<21: return "Good Evening"
+        default: return "Good Night"
         }
     }
 
@@ -286,7 +286,7 @@ struct DashboardView: View {
                         .frame(height: 6)
 
                     Capsule()
-                        .fill(domainColor.opacity(0.8))
+                        .fill(domainColor)
                         .frame(width: max(0, geo.size.width * progress), height: 6)
                         .animation(.easeOut(duration: 0.3), value: progress)
                 }
@@ -296,7 +296,7 @@ struct DashboardView: View {
         .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(domainColor.opacity(theme.isNightMode ? 0.16 : 0.14))
+                .fill(domainColor.opacity(theme.isNightMode ? 0.25 : 0.22))
         )
     }
 
