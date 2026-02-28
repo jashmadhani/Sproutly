@@ -21,15 +21,19 @@ let package = Package(
             teamIdentifier: "FDYHXN3XSH",
             displayVersion: "1.0",
             bundleVersion: "1",
-            appIcon: .placeholder(icon: .leaf),
+            appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.mint),
             supportedDeviceFamilies: [
+                .pad,
                 .phone
             ],
             supportedInterfaceOrientations: [
-                .portrait
+                .portrait,
+                .landscapeRight,
+                .landscapeLeft,
+                .portraitUpsideDown(.when(deviceFamilies: [.pad]))
             ],
-            appCategory: .healthAndFitness
+            appCategory: .healthcareFitness
         )
     ],
     targets: [
