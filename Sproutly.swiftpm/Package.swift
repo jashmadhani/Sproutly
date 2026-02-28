@@ -5,9 +5,7 @@
 // Do not edit it by hand because the contents will be replaced.
 
 import PackageDescription
-#if canImport(AppleProductTypes)
 import AppleProductTypes
-#endif
 
 let package = Package(
     name: "Sproutly",
@@ -15,40 +13,34 @@ let package = Package(
         .iOS("17.0"),
         .macOS("14.0")
     ],
-    products: [],
+    products: [
+        .iOSApplication(
+            name: "Sproutly",
+            targets: ["AppModule"],
+            bundleIdentifier: "com.jashmadhani.Sproutly",
+            teamIdentifier: "FDYHXN3XSH",
+            displayVersion: "1.0",
+            bundleVersion: "1",
+            appIcon: .placeholder(icon: .leaf),
+            accentColor: .presetColor(.mint),
+            supportedDeviceFamilies: [
+                .pad,
+                .phone
+            ],
+            supportedInterfaceOrientations: [
+                .portrait,
+                .landscapeRight,
+                .landscapeLeft,
+                .portraitUpsideDown(.when(deviceFamilies: [.pad]))
+            ],
+            appCategory: .healthcareFitness
+        )
+    ],
     targets: [
         .executableTarget(
             name: "AppModule",
             path: "."
         )
     ],
-    swiftLanguageModes: [.v6]
+    swiftLanguageVersions: [.version("6")]
 )
-
-#if canImport(AppleProductTypes)
-package.products.append(
-    .iOSApplication(
-        name: "Sproutly",
-        targets: ["AppModule"],
-        bundleIdentifier: "com.jashmadhani.Sproutly",
-        teamIdentifier: "FDYHXN3XSH",
-        displayVersion: "1.0",
-        bundleVersion: "1",
-        appIcon: .placeholder(icon: .cloud),
-        accentColor: .presetColor(.mint),
-        supportedDeviceFamilies: [
-            .pad,
-            .phone
-        ],
-        supportedInterfaceOrientations: [
-            .portrait,
-            .landscapeRight,
-            .landscapeLeft,
-            .portraitUpsideDown(.when(deviceFamilies: [.pad]))
-        ],
-        appCategory: .kidsGames
-    )
-)
-#else
-package.products.append(.executable(name: "Sproutly", targets: ["AppModule"]))
-#endif
