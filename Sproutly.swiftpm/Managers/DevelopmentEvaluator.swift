@@ -62,14 +62,7 @@ struct DomainEvaluation: Identifiable {
 
 // MARK: - Development Evaluator
 
-/// Centralized, deterministic evaluation engine.
-///
-/// Computes domain-level developmental status from milestone data
-/// using the child's corrected age. Results are heuristic guidance,
-/// not clinical diagnosis.
-///
-/// Architecture note: Views never compute status themselves —
-/// they call `DevelopmentEvaluator.evaluate(...)` and consume the result.
+// centralized so dashboard and milestones stay in sync
 struct DevelopmentEvaluator {
     
     /// Evaluates all five developmental domains.
@@ -126,16 +119,7 @@ struct DevelopmentEvaluator {
         )
     }
     
-    /// Deterministic classification based on completion ratio and context.
-    ///
-    /// Thresholds:
-    ///   ≥ 0.75 → onTrack
-    ///   0.50–0.74 → emerging
-    ///   0.30–0.49 → needsSupport
-    ///   < 0.30 → worthDiscussing (only if child is ≥ 9 months)
-    ///
-    /// Language domains apply their 1.2× focus weight per NCBI guidance,
-    /// making the threshold slightly more sensitive for communication delays.
+    // ≥0.75 on track, 0.5–0.74 emerging, 0.3–0.49 needs support, <0.3 worth discussing
     private static func classifyStatus(
         ratio: Double,
         total: Int,

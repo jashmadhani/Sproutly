@@ -15,9 +15,7 @@ import SwiftUI
 /// Resolves Day Mode and Night Mode colors based on ThemeManager state.
 enum Theme {
     
-    // =========================================================================
     // MARK: - Day Mode Palette
-    // =========================================================================
     
     /// Warm off-white background — #FAF8F4
     static let dayBg = Color(hex: 0xFAF8F4)
@@ -40,9 +38,7 @@ enum Theme {
     /// Gentle butter encouragement yellow — #F4DFA5
     static let dayYellow = Color(hex: 0xF4DFA5)
     
-    // =========================================================================
     // MARK: - Night Mode Palette (Nursery-Inspired)
-    // =========================================================================
     
     /// Deep navy background — #1C2733
     static let nightBg = Color(hex: 0x1C2733)
@@ -65,9 +61,7 @@ enum Theme {
     /// Warm golden accent — #E6C977
     static let nightGold = Color(hex: 0xE6C977)
     
-    // =========================================================================
     // MARK: - Resolved Semantic Colors
-    // =========================================================================
     // These resolve dynamically based on night mode state.
     
     static func background(for nightMode: Bool) -> Color {
@@ -98,17 +92,13 @@ enum Theme {
         nightMode ? nightGold : dayYellow
     }
     
-    // =========================================================================
     // MARK: - Static Aliases (Day Mode defaults for convenience)
-    // =========================================================================
     
     static let accentBlue = dayBlue
     static let growthGreen = dayGreen
     static let encourageYellow = dayYellow
     
-    // =========================================================================
     // MARK: - Domain Colors (5 NCBI-Aligned)
-    // =========================================================================
     
     /// Gross Motor — Soft blue
     static func grossMotorColor(for nightMode: Bool) -> Color {
@@ -135,9 +125,7 @@ enum Theme {
         nightMode ? Color(hex: 0xD4A0A0) : Color(hex: 0xC48888)
     }
     
-    // =========================================================================
     // MARK: - Ring Gradient
-    // =========================================================================
     
     /// Blue-to-green gradient for the milestone progress ring
     static func ringGradient(for nightMode: Bool) -> AngularGradient {
@@ -151,17 +139,13 @@ enum Theme {
         )
     }
     
-    // =========================================================================
     // MARK: - Layout Constants
-    // =========================================================================
     
     static let cardCornerRadius: CGFloat = 24
     static let padding: CGFloat = 16
     static let largePadding: CGFloat = 24
     
-    // =========================================================================
     // MARK: - Celebration Microcopy
-    // =========================================================================
     
     static let celebrationMessages: [String] = [
         "You noticed something wonderful today ✨",
@@ -175,9 +159,7 @@ enum Theme {
         celebrationMessages.randomElement() ?? celebrationMessages[0]
     }
     
-    // =========================================================================
     // MARK: - Late Milestone Messaging
-    // =========================================================================
     
     static func lateMilestoneMessage(ageMonth: Int) -> String {
         let rangeStart = max(0, ageMonth - 1)

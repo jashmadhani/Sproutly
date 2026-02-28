@@ -33,7 +33,7 @@ let package = Package(
                 .landscapeLeft,
                 .portraitUpsideDown(.when(deviceFamilies: [.pad]))
             ],
-            appCategory: .healthcareFitness
+            appCategory: .healthAndFitness
         )
     ],
     targets: [

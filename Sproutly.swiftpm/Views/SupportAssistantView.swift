@@ -8,8 +8,7 @@
 import SwiftUI
 import SwiftData
 
-/// Contextual support view — surfaces guidance using a rule-based response engine.
-/// Context-aware: child age, milestones, domain status. No network calls.
+// rule-based, no network calls
 struct SupportAssistantView: View {
     let milestones: [Milestone]
     let correctedAge: Int
@@ -181,7 +180,6 @@ enum ConcernIntensity {
 /// within a 3-word window they score +3 (genuine parental concern).
 struct WeightedDomainScorer {
     
-    /// (keyword, domain, base weight)
     static let keywords: [(String, MilestoneCategory, Int)] = [
         // Gross Motor
         ("walk",    .grossMotor, 2), ("crawl",   .grossMotor, 2),

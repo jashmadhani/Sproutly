@@ -28,8 +28,6 @@ struct MilestonesView: View {
 
     @State private var selectedFilter: MilestoneFilter = .thisStage
     @State private var expandedDomains: Set<String> = Set(MilestoneCategory.allCases.map(\.rawValue))
-    
-    // Priority 3: Completion note sheet state
     @State private var milestoneForNote: Milestone? = nil
     @State private var noteText: String = ""
 

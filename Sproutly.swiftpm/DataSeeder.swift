@@ -46,7 +46,6 @@ struct DataSeeder {
         }
     }
 
-    /// Legacy entry point — routes to seedIfNeeded.
     @MainActor
     static func loadSampleData(modelContext: ModelContext) {
         seedIfNeeded(modelContext: modelContext)
@@ -68,7 +67,7 @@ struct DataSeeder {
         Milestone(title: "Responds to own name", category: "Language", ageMonth: 6,
                   tips: "When they turn at their name, it means they know they belong to you."),
         Milestone(title: "Explores objects by mouthing", category: "Cognitive", ageMonth: 6,
-                  tips: "Mouthing is their research method — it's healthy, curious exploration."),
+                  tips: "Mouthing is how they explore right now. Safe objects only."),
         Milestone(title: "Looks at things nearby, reaches for objects", category: "Cognitive", ageMonth: 6,
                   tips: "Reaching shows intention and desire. Their curiosity is blossoming."),
         Milestone(title: "Recognizes familiar faces", category: "Social-Emotional", ageMonth: 6,
@@ -87,19 +86,19 @@ struct DataSeeder {
         Milestone(title: "Uses pincer grasp (thumb and finger)", category: "Fine Motor", ageMonth: 9,
                   tips: "Picking up tiny things shows incredible fine motor growth. Supervise and celebrate."),
         Milestone(title: "Bangs two objects together", category: "Fine Motor", ageMonth: 9,
-                  tips: "Banging is experimenting with cause and effect. Scientists in training!"),
+                  tips: "Loud and repetitive, yes. But they're figuring out cause and effect."),
         Milestone(title: "Understands 'no' and simple words", category: "Language", ageMonth: 9,
-                  tips: "Understanding words before speaking them is a beautiful hidden milestone."),
+                  tips: "They get more than they let on. This one often flies under the radar."),
         Milestone(title: "Makes different sounds like 'mamamama'", category: "Language", ageMonth: 9,
                   tips: "Those repeated syllables are building blocks of words. They're getting closer every day."),
         Milestone(title: "Watches the path of something as it falls", category: "Cognitive", ageMonth: 9,
                   tips: "Tracking falling objects shows understanding of the physical world. Fascinating mind at work."),
         Milestone(title: "Looks for things they see you hide", category: "Cognitive", ageMonth: 9,
-                  tips: "Object permanence — knowing things exist even when hidden — is a beautiful leap."),
+                  tips: "Try hiding a toy under a blanket. Watching them find it is genuinely fun."),
         Milestone(title: "Shows stranger anxiety", category: "Social-Emotional", ageMonth: 9,
-                  tips: "Stranger anxiety means deep trust in you. You are their safe place."),
+                  tips: "Clinging to you around strangers is a good sign, not a problem."),
         Milestone(title: "Has favorite toys", category: "Social-Emotional", ageMonth: 9,
-                  tips: "Preferences show personality emerging. Notice what they're drawn to."),
+                  tips: "Watch what they always reach for. You'll start to see their personality."),
     ] }
 
     // MARK: - 12 Months
@@ -108,11 +107,11 @@ struct DataSeeder {
         Milestone(title: "Walks holding onto furniture (cruising)", category: "Gross Motor", ageMonth: 12,
                   tips: "Cruising along furniture is a confident step toward independence."),
         Milestone(title: "May take a few steps independently", category: "Gross Motor", ageMonth: 12,
-                  tips: "Some walk now, some later — all timelines are perfect. Those wobbly steps are magic."),
+                  tips: "Anywhere between 9 and 15 months is normal. Try not to compare."),
         Milestone(title: "Puts objects into a container", category: "Fine Motor", ageMonth: 12,
                   tips: "In-and-out play teaches spatial relationships. Simple cups and blocks are perfect."),
         Milestone(title: "Releases objects voluntarily", category: "Fine Motor", ageMonth: 12,
-                  tips: "Letting go on purpose is actually harder than grabbing. A sign of growing control."),
+                  tips: "Dropping things on purpose. Harder than it sounds, actually."),
         Milestone(title: "Says 1-2 simple words like 'mama' or 'dada'", category: "Language", ageMonth: 12,
                   tips: "First words are unforgettable. Keep talking, reading, and singing."),
         Milestone(title: "Uses gestures like waving or pointing", category: "Language", ageMonth: 12,
@@ -141,22 +140,22 @@ struct DataSeeder {
         Milestone(title: "Says 10-25 words", category: "Language", ageMonth: 18,
                   tips: "Vocabulary is building. Even words only you understand count — you are their interpreter."),
         Milestone(title: "Points to show things to others", category: "Language", ageMonth: 18,
-                  tips: "Pointing to share attention is a profound social-communication skill."),
+                  tips: "When they point to show you something, they want to share it with you. That matters."),
         Milestone(title: "Knows what ordinary things are for (phone, brush)", category: "Cognitive", ageMonth: 18,
                   tips: "Using objects for their purpose shows real-world understanding. Wonderful progress."),
         Milestone(title: "Engages in simple pretend play", category: "Cognitive", ageMonth: 18,
-                  tips: "Feeding a doll or 'talking' on a phone shows imagination beginning to bloom."),
+                  tips: "Pretend play starts small. A toy phone is enough."),
         Milestone(title: "Shows emerging autonomy ('me do it')", category: "Social-Emotional", ageMonth: 18,
-                  tips: "Wanting independence is healthy. Let them try, even when it takes longer."),
+                  tips: "Let them try even when it takes three times as long. Worth it."),
         Milestone(title: "May have temper tantrums", category: "Social-Emotional", ageMonth: 18,
-                  tips: "Tantrums mean feelings are bigger than words. Stay calm and close — you're their anchor."),
+                  tips: "Tantrums are communication, not manipulation. They don't have words for it yet."),
     ] }
 
     // MARK: - 24 Months (2 Years)
 
     private static var twentyFourMonth: [Milestone] { [
         Milestone(title: "Runs well", category: "Gross Motor", ageMonth: 24,
-                  tips: "Running, climbing, moving — their body is learning what it can do. Space to move matters."),
+                  tips: "Give them room to move. Crashing into things is part of learning."),
         Milestone(title: "Kicks a ball forward", category: "Gross Motor", ageMonth: 24,
                   tips: "Kicking requires balance, coordination, and intention. A complex skill made to look simple."),
         Milestone(title: "Stacks 4-6 blocks", category: "Fine Motor", ageMonth: 24,
@@ -168,11 +167,11 @@ struct DataSeeder {
         Milestone(title: "Points to things in a book when asked", category: "Language", ageMonth: 24,
                   tips: "Connecting words to pictures shows language comprehension blossoming."),
         Milestone(title: "Sorts shapes and colors", category: "Cognitive", ageMonth: 24,
-                  tips: "Categorizing is abstract thinking. Simple shape sorters support this growth."),
+                  tips: "Sorting things is actually abstract thinking. A shape sorter works fine."),
         Milestone(title: "Follows simple two-step instructions", category: "Cognitive", ageMonth: 24,
                   tips: "Understanding sequences shows memory and processing are both developing."),
         Milestone(title: "Plays alongside other children (parallel play)", category: "Social-Emotional", ageMonth: 24,
-                  tips: "Playing beside (not with) others is normal and important at this age."),
+                  tips: "Parallel play looks like they're ignoring each other. They're not."),
         Milestone(title: "Copies others, especially adults", category: "Social-Emotional", ageMonth: 24,
                   tips: "Imitation is how they learn social behavior. You are their most important model."),
     ] }
@@ -181,7 +180,7 @@ struct DataSeeder {
 
     private static var thirtySixMonth: [Milestone] { [
         Milestone(title: "Climbs well", category: "Gross Motor", ageMonth: 36,
-                  tips: "Climbing builds strength, coordination, and brave problem-solving."),
+                  tips: "Let them climb. Falling a little is fine. Stopping them constantly isn't."),
         Milestone(title: "Pedals a tricycle", category: "Gross Motor", ageMonth: 36,
                   tips: "Pedaling is a complex coordinated movement. Every wobbly ride builds confidence."),
         Milestone(title: "Draws a circle when shown how", category: "Fine Motor", ageMonth: 36,
@@ -195,7 +194,7 @@ struct DataSeeder {
         Milestone(title: "Understands the concept of 'two'", category: "Cognitive", ageMonth: 36,
                   tips: "Number concepts are emerging. Count together during everyday moments."),
         Milestone(title: "Does 3-4 piece puzzles", category: "Cognitive", ageMonth: 36,
-                  tips: "Puzzles teach spatial reasoning, patience, and problem-solving. Beautiful work."),
+                  tips: "3-4 piece puzzles are harder than they look for little hands."),
         Milestone(title: "Takes turns in games", category: "Social-Emotional", ageMonth: 36,
                   tips: "Turn-taking requires empathy and self-control. It's a big social milestone."),
         Milestone(title: "Shows concern for a crying friend", category: "Social-Emotional", ageMonth: 36,
@@ -214,13 +213,13 @@ struct DataSeeder {
         Milestone(title: "Draws a person with 2-4 body parts", category: "Fine Motor", ageMonth: 48,
                   tips: "Drawing people shows both fine motor skill and how they see the world."),
         Milestone(title: "Tells stories and sings songs", category: "Language", ageMonth: 48,
-                  tips: "Storytelling shows imagination and language working together beautifully."),
+                  tips: "When they tell you a story — even a nonsense one — listen to the whole thing."),
         Milestone(title: "Uses sentences of 5+ words", category: "Language", ageMonth: 48,
                   tips: "Longer sentences mean more complex thoughts. Ask open-ended questions to encourage this."),
         Milestone(title: "Counts to 4 or higher", category: "Cognitive", ageMonth: 48,
                   tips: "Number concepts are strengthening. Count steps, snacks, toys — everything becomes math."),
         Milestone(title: "Understands time concepts (morning, night)", category: "Cognitive", ageMonth: 48,
-                  tips: "Understanding time shows abstract thinking is developing. Use routine to reinforce."),
+                  tips: "Morning and night before clock time. Routine helps this click."),
         Milestone(title: "Cooperative play with other children", category: "Social-Emotional", ageMonth: 48,
                   tips: "Playing together (not just beside) shows growing social skills and empathy."),
         Milestone(title: "Increasingly inventive in fantasy play", category: "Social-Emotional", ageMonth: 48,
@@ -249,6 +248,6 @@ struct DataSeeder {
         Milestone(title: "Understands rules and wants to follow them", category: "Social-Emotional", ageMonth: 60,
                   tips: "Understanding rules shows social maturity. They want to belong and participate."),
         Milestone(title: "Distinguishes fantasy from reality", category: "Social-Emotional", ageMonth: 60,
-                  tips: "Knowing what's real shows cognitive maturity. Some blurring is still normal and healthy."),
+                  tips: "The line between real and pretend is still fuzzy. That's fine at this age."),
     ] }
 }

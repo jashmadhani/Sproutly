@@ -8,7 +8,6 @@
 import SwiftUI
 
 /// Encapsulates all derived data and business logic for the Dashboard.
-/// Accepts milestones and child profile from the View layer on each update.
 @Observable
 final class DashboardViewModel {
 
@@ -27,7 +26,7 @@ final class DashboardViewModel {
     private(set) var domainConcerns: [DomainConcern] = []
     private(set) var greetingText: String = "Good Morning"
 
-    // Cache key to avoid redundant recomputation
+    // skip if nothing changed
     private var lastMilestoneCount: Int = -1
     private var lastCompletedCount: Int = -1
     private var lastCorrectedAge: Int = -1
@@ -35,7 +34,7 @@ final class DashboardViewModel {
     // MARK: - Update
 
     /// Called from the View's body to refresh all derived values.
-    /// Short-circuits if the inputs haven't changed.
+    /// skips recomputation if inputs are identical
     func update(milestones: [Milestone], childProfile: ChildProfile) {
         let age = max(0, childProfile.calculateCorrectedAge())
         let completed = milestones.filter(\.isCompleted).count

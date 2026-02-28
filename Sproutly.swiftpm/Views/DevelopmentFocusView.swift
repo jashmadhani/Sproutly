@@ -10,7 +10,7 @@ import SwiftUI
 // MARK: - Concern Level
 
 /// Tiered concern severity derived from milestone analysis.
-/// Never uses alarming language — each level is reassuring but progressively informative.
+// calm tone throughout, no alarming language
 enum ConcernLevel {
     case reviewSuggested    // 1–2 milestones, single domain
     case needsAttention     // 3+ milestones OR multiple domains
@@ -45,9 +45,7 @@ struct DomainConcern: Identifiable {
 
 // MARK: - Development Focus View
 
-/// Medically responsible concern card that surfaces when previous-bracket
-/// milestones remain incomplete. Designed per AAP/CDC guidance principles:
-/// no diagnosis, no panic, calm educational tone.
+// shows when earlier milestones are still incomplete
 struct DevelopmentFocusView: View {
     let concernLevel: ConcernLevel
     let domainConcerns: [DomainConcern]

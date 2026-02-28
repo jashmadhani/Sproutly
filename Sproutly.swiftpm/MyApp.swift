@@ -9,12 +9,7 @@ import SwiftUI
 import SwiftData
 
 // MARK: - Shared Container
-//
-// SEEDING STRATEGY
-// Initialize the container and seed data directly into the `mainContext`.
-// Because this happens synchronously before any SwiftUI view reads from `@Query`,
-// the data is immediately present in the main context on the very first render,
-// avoiding the need for complex save notification workarounds.
+// seed before first render so @Query gets data on initial render
 
 @MainActor
 let sharedAppContainer: ModelContainer = {

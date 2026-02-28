@@ -16,7 +16,7 @@ struct OnboardingView: View {
     @State private var step = 0
     @State private var isProcessing = false
 
-    // ── Profile fields ──
+    // profile fields
     @State private var childName = ""
     @State private var birthDate = Calendar.current.date(byAdding: .month, value: -4, to: Date()) ?? Date()
     @State private var isPremature = false

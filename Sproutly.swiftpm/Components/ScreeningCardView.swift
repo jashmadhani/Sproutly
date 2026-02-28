@@ -7,9 +7,7 @@
 
 import SwiftUI
 
-/// Informational screening reminder cards aligned with AAP guidance.
-/// Non-alarming — explains why screening helps.
-/// Shows active screenings + overdue screenings parents may have missed.
+// screening reminder cards — active and overdue windows
 struct ScreeningCardView: View {
     let correctedAge: Int
     let nightMode: Bool
