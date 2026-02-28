@@ -8,45 +8,13 @@
 import SwiftUI
 import SwiftData
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ROOT CAUSE ANALYSIS & FIXES
-// ─────────────────────────────────────────────────────────────────────────────
-//
-// RC-1  Ghost hit-testing from ZStack-opacity pattern
-//       .allowsHitTesting(false) does NOT remove views from the responder
-//       chain for keyboard / focus purposes. All four ScrollViews + the
-//       TextField coexist, causing SwiftUI's hit-test traversal to compete.
-//   ▸ FIX: Conditional `if step == N` rendering — only the active step
-//       exists in the view hierarchy at any time.
-//
-// RC-2  ScrollView gesture stealing first tap
-//       The TextField lives inside a ScrollView. On the first tap, the
-//       scroll gesture recognizer captures the touch for scroll-detection,
-//       then yields to the text field only on the second attempt.
-//   ▸ FIX: @FocusState + explicit .focused() binding so focus is
-//       programmatic and not dependent on the gesture chain resolving.
-//
-// RC-3  Unguarded step mutation under rapid tapping
-//       step += 1 / step -= 1 without clamping can push step out of
-//       bounds under rapid tapping, especially when body re-evaluates
-//       mid-gesture.
-//   ▸ FIX: Clamp all step mutations to 0...(totalSteps - 1).
-//
-// RC-4  asyncAfter race on "Begin Your Journey" button
-//       DispatchQueue.main.asyncAfter allows double-firing if the user
-//       taps the button twice within the 200ms delay.
-//   ▸ FIX: @State isProcessing guard + synchronous completeOnboarding().
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// Emotionally supportive onboarding flow — under 60 seconds.
-/// Four gentle screens: Welcome, How It Works, Reassurance, Profile Setup.
+/// Four-step onboarding flow: Welcome → How It Works → Reassurance → Profile.
 struct OnboardingView: View {
     @Environment(ChildProfile.self) private var childProfile
     @Environment(ThemeManager.self) private var theme
 
-    // ── Step state ──
     @State private var step = 0
-    @State private var isProcessing = false       // RC-4: double-tap guard
+    @State private var isProcessing = false
 
     // ── Profile fields ──
     @State private var childName = ""
@@ -54,8 +22,7 @@ struct OnboardingView: View {
     @State private var isPremature = false
     @State private var gestationalWeeks = 40
 
-    // ── Focus ──
-    @FocusState private var isNameFieldFocused: Bool  // RC-2: explicit focus
+    @FocusState private var isNameFieldFocused: Bool
 
     private let totalSteps = 4
 
@@ -67,8 +34,7 @@ struct OnboardingView: View {
             VStack(spacing: 0) {
                 progressDots
 
-                // RC-1 FIX: Only the active step is in the hierarchy.
-                // No ghost hit areas, no competing gesture recognizers.
+
                 Group {
                     if step == 0 {
                         welcomeStep
@@ -80,15 +46,12 @@ struct OnboardingView: View {
                         profileStep
                     }
                 }
-                .transition(.identity) // no animated transition
+                .transition(.identity)
 
                 navigationButtons
             }
         }
-        .onTapGesture {
-            // Dismiss keyboard when tapping outside the text field
-            isNameFieldFocused = false
-        }
+        .onTapGesture { isNameFieldFocused = false }
     }
 }
 
@@ -261,13 +224,12 @@ private extension OnboardingView {
                 }
 
                 VStack(alignment: .leading, spacing: 20) {
-                    // ── Name Field ──
                     VStack(alignment: .leading, spacing: 8) {
                         Label("Child's Name", systemImage: "heart.fill")
                             .font(.subheadline)
                             .foregroundStyle(theme.blue)
 
-                        // RC-2 FIX: .focused() binding ensures first-tap activation.
+
                         TextField("Enter name", text: $childName)
                             .focused($isNameFieldFocused)
                             .textFieldStyle(.plain)
@@ -284,7 +246,7 @@ private extension OnboardingView {
                             }
                     }
 
-                    // ── Birth Date ──
+
                     VStack(alignment: .leading, spacing: 8) {
                         Label("Birth Date", systemImage: "calendar")
                             .font(.subheadline)
@@ -296,7 +258,7 @@ private extension OnboardingView {
                             .tint(theme.blue)
                     }
 
-                    // ── Premature Toggle ──
+
                     Toggle(isOn: $isPremature) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Born Before 37 Weeks")
@@ -381,7 +343,7 @@ private extension OnboardingView {
 
 private extension OnboardingView {
 
-    // RC-3 FIX: All step mutations clamped to valid range.
+
     func goBack() {
         isNameFieldFocused = false
         step = max(0, step - 1)
@@ -413,7 +375,7 @@ private extension OnboardingView {
             Spacer()
 
             Button {
-                // RC-4 FIX: Guard against double-fire.
+
                 guard !isProcessing else { return }
 
 #if os(iOS)
@@ -421,7 +383,7 @@ private extension OnboardingView {
 #endif
 
                 if step == totalSteps - 1 {
-                    // Final step — synchronous completion, no asyncAfter race.
+
                     isProcessing = true
                     completeOnboarding()
                 } else {

@@ -1,0 +1,132 @@
+//
+//  DashboardViewModel.swift
+//  Sproutly
+//
+//  Created by Jash Madhani on 28/02/26.
+//
+
+import SwiftUI
+
+/// Encapsulates all derived data and business logic for the Dashboard.
+/// Accepts milestones and child profile from the View layer on each update.
+@Observable
+final class DashboardViewModel {
+
+    // MARK: - Published Derived State
+
+    private(set) var correctedAge: Int = 0
+    private(set) var targetAgeMonth: Int = 6
+    private(set) var currentStageMilestones: [Milestone] = []
+    private(set) var currentStageCompleted: Int = 0
+    private(set) var currentStageTotal: Int = 0
+    private(set) var currentStageProgress: Double = 0
+    private(set) var completedMilestones: [Milestone] = []
+    private(set) var flaggedMilestones: [Milestone] = []
+    private(set) var hasDevelopmentFocus: Bool = false
+    private(set) var concernLevel: ConcernLevel = .reviewSuggested
+    private(set) var domainConcerns: [DomainConcern] = []
+    private(set) var greetingText: String = "Good Morning"
+
+    // Cache key to avoid redundant recomputation
+    private var lastMilestoneCount: Int = -1
+    private var lastCompletedCount: Int = -1
+    private var lastCorrectedAge: Int = -1
+
+    // MARK: - Update
+
+    /// Called from the View's body to refresh all derived values.
+    /// Short-circuits if the inputs haven't changed.
+    func update(milestones: [Milestone], childProfile: ChildProfile) {
+        let age = max(0, childProfile.calculateCorrectedAge())
+        let completed = milestones.filter(\.isCompleted).count
+
+        guard milestones.count != lastMilestoneCount
+           || completed != lastCompletedCount
+           || age != lastCorrectedAge else { return }
+
+        lastMilestoneCount = milestones.count
+        lastCompletedCount = completed
+        lastCorrectedAge = age
+
+        correctedAge = age
+        greetingText = Self.resolveGreeting()
+
+        let brackets = Array(Set(milestones.map(\.ageMonth))).sorted()
+        targetAgeMonth = Self.resolveTargetAge(
+            milestones: milestones,
+            brackets: brackets,
+            correctedAge: age
+        )
+
+        currentStageMilestones = milestones.filter { $0.ageMonth == targetAgeMonth }
+        currentStageCompleted = currentStageMilestones.filter(\.isCompleted).count
+        currentStageTotal = currentStageMilestones.count
+        currentStageProgress = currentStageTotal > 0
+            ? Double(currentStageCompleted) / Double(currentStageTotal)
+            : 0
+
+        completedMilestones = milestones
+            .filter(\.isCompleted)
+            .sorted { ($0.dateCompleted ?? .distantPast) > ($1.dateCompleted ?? .distantPast) }
+
+        flaggedMilestones = milestones.filter { m in
+            !m.isCompleted && age >= m.ageMonth + 2
+        }
+
+        hasDevelopmentFocus = flaggedMilestones.count >= 2
+
+        let domainCount = Set(flaggedMilestones.map(\.category)).count
+        concernLevel = (flaggedMilestones.count >= 3 || domainCount >= 2)
+            ? .needsAttention
+            : .reviewSuggested
+
+        let grouped = Dictionary(grouping: flaggedMilestones, by: \.category)
+        domainConcerns = grouped.compactMap { categoryRaw, items in
+            guard let category = MilestoneCategory(rawValue: categoryRaw) else { return nil }
+            return DomainConcern(
+                id: categoryRaw,
+                category: category,
+                milestoneCount: items.count
+            )
+        }
+        .sorted { $0.milestoneCount > $1.milestoneCount }
+    }
+
+    /// Per-domain stats for the bento grid.
+    func categoryStats(_ category: MilestoneCategory, milestones: [Milestone]) -> (completed: Int, total: Int) {
+        let cat = milestones.filter { $0.category == category.rawValue }
+        return (cat.filter(\.isCompleted).count, cat.count)
+    }
+
+    // MARK: - Private Helpers
+
+    private static func resolveGreeting() -> String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        switch hour {
+        case 5..<12:  return "Good Morning"
+        case 12..<17: return "Good Afternoon"
+        case 17..<21: return "Good Evening"
+        default:      return "Good Night"
+        }
+    }
+
+    /// Stays on the most recent incomplete bracket (≤60% done)
+    /// that the child's corrected age has reached or passed.
+    private static func resolveTargetAge(
+        milestones: [Milestone],
+        brackets: [Int],
+        correctedAge: Int
+    ) -> Int {
+        guard !milestones.isEmpty else { return 6 }
+        let reached = brackets.filter { $0 <= correctedAge }
+        for bracket in reached.reversed() {
+            let items = milestones.filter { $0.ageMonth == bracket }
+            let done = items.filter(\.isCompleted).count
+            guard items.count > 0 else { continue }
+            if Double(done) / Double(items.count) <= 0.6 {
+                return bracket
+            }
+        }
+        return brackets.min(by: { abs($0 - correctedAge) < abs($1 - correctedAge) }) ?? 6
+    }
+}

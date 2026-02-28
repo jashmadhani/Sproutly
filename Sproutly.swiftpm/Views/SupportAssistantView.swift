@@ -8,10 +8,8 @@
 import SwiftUI
 import SwiftData
 
-/// Empathetic AI Support Assistant that replaces the journal.
-/// Uses on-device rule-based response engine — no API needed.
-/// Context-aware: knows child age, milestones, domain status.
-/// Response pattern: Reassurance → Normalization → Activities → Pediatric mention.
+/// Contextual support view — surfaces guidance using a rule-based response engine.
+/// Context-aware: child age, milestones, domain status. No network calls.
 struct SupportAssistantView: View {
     let milestones: [Milestone]
     let correctedAge: Int
@@ -285,8 +283,8 @@ struct WeightedDomainScorer {
 
 // MARK: - Rule-Based Response Engine
 
-/// On-device response engine using weighted keyword scoring + domain context.
-/// Randomizes phrasing and branches by age.
+/// On-device rule-based response engine using weighted keyword scoring and domain context.
+/// Randomises phrasing and branches by corrected age.
 enum AssistantEngine {
     
     static func generateResponse(

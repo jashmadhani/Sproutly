@@ -19,114 +19,15 @@ struct ScrollOffsetKey: PreferenceKey {
 
 // MARK: - Dashboard View
 
-/// Clean summary screen — header, progress ring, domain progress bars,
-/// recent moments, screening reminders, education, and growth tip.
-/// Milestone interaction lives in MilestonesView.
+/// Main summary screen showing progress, domains, moments, and guidance.
 struct DashboardView: View {
     @Query(sort: \Milestone.ageMonth) private var milestones: [Milestone]
     @Environment(\.modelContext) private var modelContext
     @Environment(ChildProfile.self) private var childProfile
     @Environment(ThemeManager.self) private var theme
 
+    @State private var viewModel = DashboardViewModel()
     @State private var scrollOffset: CGFloat = 0
-
-    // MARK: - Derived Data
-
-    private var correctedAge: Int { max(0, childProfile.calculateCorrectedAge()) }
-
-    /// All distinct age brackets in the seeded data, sorted ascending.
-    private var allAgeBrackets: [Int] {
-        Array(Set(milestones.map(\.ageMonth))).sorted()
-    }
-
-    /// Smart progression: stays on the most recent incomplete bracket
-    /// (≤60% done) that the child's age has reached or passed.
-    /// Only advances when >60% of the bracket is complete.
-    private var targetAgeMonth: Int {
-        guard !milestones.isEmpty else { return 6 }
-        let brackets = allAgeBrackets
-        // Find brackets the child has reached (age >= bracket)
-        let reachedBrackets = brackets.filter { $0 <= correctedAge }
-        // Walk backwards through reached brackets to find the first incomplete one
-        for bracket in reachedBrackets.reversed() {
-            let bracketMilestones = milestones.filter { $0.ageMonth == bracket }
-            let completed = bracketMilestones.filter(\.isCompleted).count
-            let total = bracketMilestones.count
-            guard total > 0 else { continue }
-            let progress = Double(completed) / Double(total)
-            if progress <= 0.6 {
-                return bracket
-            }
-        }
-        // All reached brackets are >60% done — show the nearest bracket to current age
-        return brackets.min(by: { abs($0 - correctedAge) < abs($1 - correctedAge) }) ?? 6
-    }
-
-    private var currentStageMilestones: [Milestone] {
-        milestones.filter { $0.ageMonth == targetAgeMonth }
-    }
-
-    private var currentStageCompleted: Int {
-        currentStageMilestones.filter(\.isCompleted).count
-    }
-
-    private var currentStageTotal: Int {
-        currentStageMilestones.count
-    }
-
-    private var currentStageProgress: Double {
-        guard currentStageTotal > 0 else { return 0 }
-        return Double(currentStageCompleted) / Double(currentStageTotal)
-    }
-
-    private var completedMilestones: [Milestone] {
-        milestones
-            .filter(\.isCompleted)
-            .sorted { ($0.dateCompleted ?? .distantPast) > ($1.dateCompleted ?? .distantPast) }
-    }
-
-    private func categoryStats(_ category: MilestoneCategory) -> (completed: Int, total: Int) {
-        let cat = milestones.filter { $0.category == category.rawValue }
-        return (cat.filter(\.isCompleted).count, cat.count)
-    }
-
-    // MARK: - Development Focus Engine
-
-    /// Milestones flagged for review: incomplete and child age ≥ milestone age + 2 months.
-    /// Uses 2-month threshold per AAP/CDC developmental surveillance guidance.
-    private var flaggedMilestones: [Milestone] {
-        milestones.filter { milestone in
-            !milestone.isCompleted && correctedAge >= milestone.ageMonth + 2
-        }
-    }
-
-    /// True when there are meaningful developmental gaps worth surfacing.
-    private var hasDevelopmentFocus: Bool {
-        flaggedMilestones.count >= 2
-    }
-
-    /// Tiered concern level based on count and domain spread.
-    private var concernLevel: ConcernLevel {
-        let domainCount = Set(flaggedMilestones.map(\.category)).count
-        if flaggedMilestones.count >= 3 || domainCount >= 2 {
-            return .needsAttention
-        }
-        return .reviewSuggested
-    }
-
-    /// Groups flagged milestones by domain for the breakdown display.
-    private var domainConcerns: [DomainConcern] {
-        let grouped = Dictionary(grouping: flaggedMilestones, by: \.category)
-        return grouped.compactMap { categoryRaw, milestones in
-            guard let category = MilestoneCategory(rawValue: categoryRaw) else { return nil }
-            return DomainConcern(
-                id: categoryRaw,
-                category: category,
-                milestoneCount: milestones.count
-            )
-        }
-        .sorted { $0.milestoneCount > $1.milestoneCount }
-    }
 
     // MARK: - Body
 
@@ -138,7 +39,7 @@ struct DashboardView: View {
                 VStack(spacing: 28) {
                     headerCard
                     progressCard
-                    if hasDevelopmentFocus {
+                    if viewModel.hasDevelopmentFocus {
                         developmentFocusCard
                     }
                     categoryOverview
@@ -157,15 +58,22 @@ struct DashboardView: View {
                 DataSeeder.seedIfNeeded(modelContext: modelContext)
             }
         }
+        .onChange(of: milestones.count) {
+            viewModel.update(milestones: milestones, childProfile: childProfile)
+        }
+        .onChange(of: milestones.filter(\.isCompleted).count) {
+            viewModel.update(milestones: milestones, childProfile: childProfile)
+        }
+        .onAppear {
+            viewModel.update(milestones: milestones, childProfile: childProfile)
+        }
     }
 
-    // =========================================================================
     // MARK: - Header Card
-    // =========================================================================
 
     private var headerCard: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(greetingText)
+            Text(viewModel.greetingText)
                 .font(.subheadline)
                 .foregroundStyle(theme.textSecondary)
 
@@ -182,37 +90,25 @@ struct DashboardView: View {
         .padding(.bottom, 4)
     }
 
-    private var greetingText: String {
-        let hour = Calendar.current.component(.hour, from: Date())
-        switch hour {
-        case 5..<12: return "Good Morning"
-        case 12..<17: return "Good Afternoon"
-        case 17..<21: return "Good Evening"
-        default: return "Good Night"
-        }
-    }
-
-    // =========================================================================
     // MARK: - Progress Ring
-    // =========================================================================
 
     private var progressCard: some View {
         VStack(spacing: 20) {
             ZStack {
                 MilestoneRingView(
-                    progress: currentStageProgress,
-                    completedCount: currentStageCompleted,
-                    totalCount: currentStageTotal,
+                    progress: viewModel.currentStageProgress,
+                    completedCount: viewModel.currentStageCompleted,
+                    totalCount: viewModel.currentStageTotal,
                     nightMode: theme.isNightMode
                 )
                 .frame(width: 160, height: 160)
 
                 VStack(spacing: 2) {
-                    Text("\(currentStageCompleted)")
+                    Text("\(viewModel.currentStageCompleted)")
                         .font(.system(size: 40, weight: .bold, design: .rounded))
                         .foregroundStyle(theme.text)
 
-                    Text("of \(currentStageTotal)")
+                    Text("of \(viewModel.currentStageTotal)")
                         .font(.subheadline)
                         .foregroundStyle(theme.textSecondary)
 
@@ -222,7 +118,7 @@ struct DashboardView: View {
                 }
             }
 
-            Text("\(targetAgeMonth)-month milestones")
+            Text("\(viewModel.targetAgeMonth)-month milestones")
                 .font(.subheadline)
                 .foregroundStyle(theme.textSecondary)
         }
@@ -230,12 +126,10 @@ struct DashboardView: View {
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Milestone progress")
-        .accessibilityValue("\(currentStageCompleted) of \(currentStageTotal) milestones completed for \(targetAgeMonth) months")
+        .accessibilityValue("\(viewModel.currentStageCompleted) of \(viewModel.currentStageTotal) milestones completed for \(viewModel.targetAgeMonth) months")
     }
 
-    // =========================================================================
     // MARK: - Category Overview (Bento Grid)
-    // =========================================================================
 
     private var categoryOverview: some View {
         let columns = [
@@ -258,7 +152,7 @@ struct DashboardView: View {
     }
 
     private func domainTile(_ category: MilestoneCategory) -> some View {
-        let stats = categoryStats(category)
+        let stats = viewModel.categoryStats(category, milestones: milestones)
         let progress = stats.total > 0 ? Double(stats.completed) / Double(stats.total) : 0
         let domainColor = category.color(for: theme.isNightMode)
 
@@ -305,9 +199,7 @@ struct DashboardView: View {
         .accessibilityLabel("\(category.gentleLabel), \(stats.completed) of \(stats.total) completed")
     }
 
-    // =========================================================================
     // MARK: - Recent Moments
-    // =========================================================================
 
     private var recentMomentsCard: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -316,7 +208,7 @@ struct DashboardView: View {
                 .foregroundStyle(theme.text)
                 .padding(.leading, 4)
 
-            if completedMilestones.isEmpty {
+            if viewModel.completedMilestones.isEmpty {
                 HStack(spacing: 10) {
                     Image(systemName: "sparkles")
                         .foregroundStyle(theme.textSecondary)
@@ -331,7 +223,7 @@ struct DashboardView: View {
                         .fill(theme.isNightMode ? Theme.nightCard : .white)
                 )
             } else {
-                ForEach(completedMilestones.prefix(3)) { milestone in
+                ForEach(viewModel.completedMilestones.prefix(3)) { milestone in
                     HStack(spacing: 14) {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 16))
@@ -378,34 +270,28 @@ struct DashboardView: View {
         }
     }
 
-    // =========================================================================
     // MARK: - Screening Cards
-    // =========================================================================
 
     private var screeningCards: some View {
         ScreeningCardView(
-            correctedAge: correctedAge,
+            correctedAge: viewModel.correctedAge,
             nightMode: theme.isNightMode
         )
     }
 
-    // =========================================================================
-    // MARK: - Growth Insights (Merged)
-    // =========================================================================
+    // MARK: - Growth Insights
 
     private var growthInsightsSection: some View {
         GrowthInsightsView(nightMode: theme.isNightMode)
     }
 
-    // =========================================================================
     // MARK: - Development Focus Card
-    // =========================================================================
 
     private var developmentFocusCard: some View {
         DevelopmentFocusView(
-            concernLevel: concernLevel,
-            domainConcerns: domainConcerns,
-            totalFlagged: flaggedMilestones.count,
+            concernLevel: viewModel.concernLevel,
+            domainConcerns: viewModel.domainConcerns,
+            totalFlagged: viewModel.flaggedMilestones.count,
             nightMode: theme.isNightMode
         )
     }
