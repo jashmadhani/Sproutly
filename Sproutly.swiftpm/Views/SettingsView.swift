@@ -8,8 +8,7 @@
 import SwiftUI
 import SwiftData
 
-/// Settings — adjust profile, toggle Night Mode, manage data.
-/// Uses warm, supportive tone throughout.
+
 struct SettingsView: View {
     @Environment(ChildProfile.self) private var childProfile
     @Environment(\.modelContext) private var modelContext

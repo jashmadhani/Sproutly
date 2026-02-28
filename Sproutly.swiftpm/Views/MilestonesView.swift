@@ -18,8 +18,7 @@ enum MilestoneFilter: String, CaseIterable {
 
 // MARK: - Milestones View
 
-/// Dedicated browsing view for all developmental milestones.
-/// Supports segmented filtering and domain-based collapsible grouping.
+
 struct MilestonesView: View {
     @Query(sort: \Milestone.ageMonth) private var milestones: [Milestone]
     @Environment(\.modelContext) private var modelContext
@@ -84,9 +83,7 @@ struct MilestonesView: View {
         }
     }
 
-    // =========================================================================
     // MARK: - Header
-    // =========================================================================
 
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -117,9 +114,7 @@ struct MilestonesView: View {
         }
     }
 
-    // =========================================================================
     // MARK: - Filter Picker
-    // =========================================================================
 
     private var filterPicker: some View {
         Picker("Filter", selection: $selectedFilter) {
@@ -132,9 +127,7 @@ struct MilestonesView: View {
         .accessibilityLabel("Milestone filter")
     }
 
-    // =========================================================================
     // MARK: - Domain Groups
-    // =========================================================================
 
     private var domainGroups: some View {
         let grouped = groupedMilestones
@@ -237,9 +230,7 @@ struct MilestonesView: View {
         .warmCard(nightMode: theme.isNightMode)
     }
 
-    // =========================================================================
     // MARK: - Milestone Row
-    // =========================================================================
 
     private func milestoneRow(_ milestone: Milestone) -> some View {
         HStack(spacing: 12) {
@@ -286,9 +277,7 @@ struct MilestonesView: View {
         .accessibilityElement(children: .combine)
     }
 
-    // =========================================================================
     // MARK: - Empty State
-    // =========================================================================
 
     private var emptyState: some View {
         VStack(spacing: 12) {
@@ -306,9 +295,7 @@ struct MilestonesView: View {
         .padding(.vertical, 40)
     }
 
-    // =========================================================================
     // MARK: - Completion Note Sheet
-    // =========================================================================
 
     private func completionNoteSheet(for milestone: Milestone) -> some View {
         VStack(spacing: 20) {
@@ -394,13 +381,9 @@ struct MilestonesView: View {
         .background(theme.isNightMode ? Theme.nightCard : Color.white)
     }
 
-    // =========================================================================
     // MARK: - Actions
-    // =========================================================================
 
-    /// Handles tap on the toggle button.
-    /// If marking complete → show note sheet first.
-    /// If uncompleting → toggle immediately and clear note.
+    // marking → show note sheet, unmarking → toggle immediately
     private func handleToggle(_ milestone: Milestone) {
         if milestone.isCompleted {
             // Uncompleting — toggle immediately, clear note
@@ -414,7 +397,7 @@ struct MilestonesView: View {
         }
     }
 
-    /// Called from the sheet to commit the completion with optional note.
+
     private func commitToggle(_ milestone: Milestone, note: String) {
         milestone.isCompleted = true
         milestone.dateCompleted = Date()

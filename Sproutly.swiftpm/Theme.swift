@@ -7,12 +7,9 @@
 
 import SwiftUI
 
-// MARK: - Sproutly Empathetic Color System
-// A calm, nursery-inspired palette designed to reduce anxiety and increase
-// reassurance, warmth, and trust. Like a quiet bedside journal.
+// MARK: - Theme
 
-/// Central theme configuration for Sproutly
-/// Resolves Day Mode and Night Mode colors based on ThemeManager state.
+
 enum Theme {
     
     // MARK: - Day Mode Palette
@@ -98,7 +95,7 @@ enum Theme {
     static let growthGreen = dayGreen
     static let encourageYellow = dayYellow
     
-    // MARK: - Domain Colors (5 NCBI-Aligned)
+    // MARK: - Domain Colors
     
     /// Gross Motor — Soft blue
     static func grossMotorColor(for nightMode: Bool) -> Color {
@@ -110,7 +107,7 @@ enum Theme {
         nightMode ? Color(hex: 0xD4B87B) : Color(hex: 0xC4A86B)
     }
     
-    /// Language — Warm teal (weighted 1.2x in focus scoring)
+    /// Language — Warm teal
     static func languageColor(for nightMode: Bool) -> Color {
         nightMode ? Color(hex: 0x8FC4B8) : Color(hex: 0x6BA8A0)
     }
@@ -127,7 +124,7 @@ enum Theme {
     
     // MARK: - Ring Gradient
     
-    /// Blue-to-green gradient for the milestone progress ring
+
     static func ringGradient(for nightMode: Bool) -> AngularGradient {
         AngularGradient(
             colors: [
@@ -186,7 +183,7 @@ extension Color {
 // MARK: - Theme-Aware Card Modifier
 
 extension View {
-    /// Applies warm, rounded card styling that adapts to night mode.
+
     func warmCard(nightMode: Bool) -> some View {
         self
             .padding(20)
@@ -202,7 +199,7 @@ extension View {
             )
     }
     
-    /// Legacy support — maps to warmCard with day mode
+
     func natureCard() -> some View {
         self.warmCard(nightMode: false)
     }
@@ -210,7 +207,7 @@ extension View {
 
 // MARK: - Gradient Button Style
 
-/// A capsule button style with soft press feedback
+
 struct SoftCapsuleStyle: ButtonStyle {
     var baseColor: Color
     var isAction: Bool = false
@@ -255,23 +252,23 @@ struct AmbientBackground: View {
 
     var body: some View {
         ZStack {
-            // Base background
+
             Theme.background(for: nightMode)
                 .ignoresSafeArea()
 
-            // Soft ambient blob 1 — blue tint (large + low opacity instead of blur)
+
             Circle()
                 .fill(Theme.accentBlue(for: nightMode).opacity(nightMode ? 0.04 : 0.07))
                 .frame(width: 400, height: 400)
                 .offset(x: -115, y: -200)
 
-            // Soft ambient blob 2 — green tint
+
             Circle()
                 .fill(Theme.growthGreen(for: nightMode).opacity(nightMode ? 0.03 : 0.06))
                 .frame(width: 420, height: 420)
                 .offset(x: 125, y: 225)
 
-            // Soft ambient blob 3 — yellow warmth
+
             Circle()
                 .fill(Theme.encourageYellow(for: nightMode).opacity(nightMode ? 0.02 : 0.05))
                 .frame(width: 300, height: 300)

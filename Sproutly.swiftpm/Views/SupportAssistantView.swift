@@ -165,8 +165,7 @@ struct AssistantResponse {
 
 // MARK: - Concern Intensity
 
-/// How strongly the parent's question expresses worry.
-/// Used to decide whether to surface the pediatric note unconditionally.
+
 enum ConcernIntensity {
     case none        // No concern-modifiers detected
     case mild        // 1 concern-modifier
@@ -175,9 +174,7 @@ enum ConcernIntensity {
 
 // MARK: - Weighted Domain Scorer
 
-/// Replaces naive `q.contains()` with weighted keyword scoring.
-/// Domain-specific words score +2 base; when preceded by negative sentiment
-/// within a 3-word window they score +3 (genuine parental concern).
+// weighted keyword scoring to detect the relevant domain
 struct WeightedDomainScorer {
     
     static let keywords: [(String, MilestoneCategory, Int)] = [
@@ -223,20 +220,20 @@ struct WeightedDomainScorer {
         ("angry",      .socialEmotional, 2), ("bite",       .socialEmotional, 2),
     ]
     
-    /// Words that indicate parental concern / negative sentiment
+
     static let negativeModifiers: Set<String> = [
         "not", "isn't", "hasn't", "never", "still", "worried",
         "concerned", "delayed", "behind", "struggling", "can't",
         "doesn't", "won't", "unable", "slow", "late", "lacking"
     ]
     
-    /// Scoring result
+
     struct Result {
         let domain: MilestoneCategory?
         let intensity: ConcernIntensity
     }
     
-    /// Tokenize, score, and return the best domain + concern intensity.
+
     static func score(question: String) -> Result {
         // Tokenize: split on non-alphanumeric, lowercased
         let tokens = question.lowercased()
@@ -281,8 +278,7 @@ struct WeightedDomainScorer {
 
 // MARK: - Rule-Based Response Engine
 
-/// On-device rule-based response engine using weighted keyword scoring and domain context.
-/// Randomises phrasing and branches by corrected age.
+
 enum AssistantEngine {
     
     static func generateResponse(

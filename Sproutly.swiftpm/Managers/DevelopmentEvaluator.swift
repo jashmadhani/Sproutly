@@ -9,9 +9,7 @@ import SwiftUI
 
 // MARK: - Domain Status
 
-/// Represents the developmental status of a single domain.
-/// Language is intentionally supportive and non-diagnostic —
-/// these are observational heuristics, not clinical assessments.
+
 enum DomainStatus: String, CaseIterable {
     case onTrack       = "On Track"
     case emerging      = "Emerging"
@@ -27,7 +25,7 @@ enum DomainStatus: String, CaseIterable {
         }
     }
     
-    /// Soft, theme-aware accent color — never red, never alarming.
+
     func color(for nightMode: Bool) -> Color {
         switch self {
         case .onTrack:        return Theme.growthGreen(for: nightMode)
@@ -37,7 +35,7 @@ enum DomainStatus: String, CaseIterable {
         }
     }
     
-    /// Warm, reassuring subtitle shown beneath the status label.
+
     var supportiveMessage: String {
         switch self {
         case .onTrack:        return "Growing beautifully"
@@ -50,7 +48,7 @@ enum DomainStatus: String, CaseIterable {
 
 // MARK: - Domain Evaluation Result
 
-/// Holds the evaluation result for a single developmental domain.
+
 struct DomainEvaluation: Identifiable {
     let id = UUID()
     let category: MilestoneCategory
@@ -65,12 +63,7 @@ struct DomainEvaluation: Identifiable {
 // centralized so dashboard and milestones stay in sync
 struct DevelopmentEvaluator {
     
-    /// Evaluates all five developmental domains.
-    ///
-    /// - Parameters:
-    ///   - milestones: All milestones from the data store.
-    ///   - correctedAge: The child's corrected age in months.
-    /// - Returns: One `DomainEvaluation` per `MilestoneCategory`, in standard order.
+
     static func evaluate(
         milestones: [Milestone],
         correctedAge: Int
@@ -91,8 +84,7 @@ struct DevelopmentEvaluator {
         milestones: [Milestone],
         correctedAge: Int
     ) -> DomainEvaluation {
-        // Consider milestones up to and including the child's current age window.
-        // This gives us the set of milestones the child "should" have encountered.
+        // milestones up to current age
         let relevant = milestones.filter {
             $0.category == category.rawValue && $0.ageMonth <= correctedAge
         }
@@ -100,7 +92,7 @@ struct DevelopmentEvaluator {
         let total = relevant.count
         let completed = relevant.filter(\.isCompleted).count
         
-        // If no milestones are expected yet, the child is on track by default.
+
         let ratio = total > 0 ? Double(completed) / Double(total) : 1.0
         
         let status = classifyStatus(
@@ -129,10 +121,9 @@ struct DevelopmentEvaluator {
         // No milestones expected yet → on track by default
         guard total > 0 else { return .onTrack }
         
-        // Apply the category's focus weight (language = 1.2×).
-        // A higher weight makes the effective ratio *lower*, increasing sensitivity.
+        // language gets 1.2× weight so it's slightly more sensitive
         let adjustedRatio = ratio / category.focusWeight
-        // Clamp to [0, 1] so categories with weight 1.0 aren't penalised.
+
         let effectiveRatio = min(adjustedRatio, 1.0)
         
         switch effectiveRatio {
@@ -143,9 +134,7 @@ struct DevelopmentEvaluator {
         case 0.30..<0.50:
             return .needsSupport
         default:
-            // Below 0.30 — only suggest discussing if the child is
-            // meaningfully past the earliest age window (≥ 9 months).
-            // For very young children, "needs support" is gentler.
+            // only suggest discussing if ≥9 months
             return correctedAge >= 9 ? .worthDiscussing : .needsSupport
         }
     }

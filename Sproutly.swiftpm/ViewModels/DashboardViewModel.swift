@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// Encapsulates all derived data and business logic for the Dashboard.
+
 @Observable
 final class DashboardViewModel {
 
@@ -33,8 +33,7 @@ final class DashboardViewModel {
 
     // MARK: - Update
 
-    /// Called from the View's body to refresh all derived values.
-    /// skips recomputation if inputs are identical
+    // refreshes derived state, skips if inputs unchanged
     func update(milestones: [Milestone], childProfile: ChildProfile) {
         let age = max(0, childProfile.calculateCorrectedAge())
         let completed = milestones.filter(\.isCompleted).count
@@ -91,7 +90,7 @@ final class DashboardViewModel {
         .sorted { $0.milestoneCount > $1.milestoneCount }
     }
 
-    /// Per-domain stats for the bento grid.
+
     func categoryStats(_ category: MilestoneCategory, milestones: [Milestone]) -> (completed: Int, total: Int) {
         let cat = milestones.filter { $0.category == category.rawValue }
         return (cat.filter(\.isCompleted).count, cat.count)
@@ -109,8 +108,7 @@ final class DashboardViewModel {
         }
     }
 
-    /// Stays on the most recent incomplete bracket (≤60% done)
-    /// that the child's corrected age has reached or passed.
+    // stay on most recent incomplete bracket the child has reached
     private static func resolveTargetAge(
         milestones: [Milestone],
         brackets: [Int],

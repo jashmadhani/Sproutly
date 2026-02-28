@@ -7,8 +7,7 @@
 
 import SwiftUI
 
-/// Gentle one-tap button to mark milestones complete.
-/// Fires haptic + action synchronously — zero animation delay.
+
 struct OneTapLogButton: View {
     var isCompleted: Bool
     var nightMode: Bool = false

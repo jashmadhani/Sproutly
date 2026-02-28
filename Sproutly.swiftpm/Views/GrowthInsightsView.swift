@@ -7,8 +7,7 @@
 
 import SwiftUI
 
-/// Unified insight card merging the growth tip with educational content.
-/// Reduces vertical fragmentation while maintaining calm, informative tone.
+
 struct GrowthInsightsView: View {
     let nightMode: Bool
 

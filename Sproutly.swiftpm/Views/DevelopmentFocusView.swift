@@ -9,7 +9,7 @@ import SwiftUI
 
 // MARK: - Concern Level
 
-/// Tiered concern severity derived from milestone analysis.
+
 // calm tone throughout, no alarming language
 enum ConcernLevel {
     case reviewSuggested    // 1–2 milestones, single domain
@@ -32,7 +32,7 @@ enum ConcernLevel {
 
 // MARK: - Domain Concern
 
-/// Groups flagged milestones by developmental domain for display.
+
 struct DomainConcern: Identifiable {
     let id: String
     let category: MilestoneCategory

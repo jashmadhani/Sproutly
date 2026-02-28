@@ -7,8 +7,7 @@
 
 import SwiftUI
 
-/// Calm progress ring with blue-to-green gradient.
-/// Shows current month's milestone progress without gamification.
+
 struct MilestoneRingView: View {
     var progress: Double
     var completedCount: Int
@@ -22,14 +21,14 @@ struct MilestoneRingView: View {
 
     var body: some View {
         ZStack {
-            // Background track — stronger contrast
+
             Circle()
                 .stroke(
                     ringBlue.opacity(nightMode ? 0.25 : 0.30),
                     lineWidth: 12
                 )
 
-            // Progress arc — rich 3-stop gradient
+
             Circle()
                 .trim(from: 0, to: animatedProgress)
                 .stroke(

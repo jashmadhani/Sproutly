@@ -8,8 +8,7 @@
 import SwiftUI
 import SwiftData
 
-/// Top-level tab wrapping the AI Support Assistant.
-/// Provides developmental guidance using on-device rule-based responses.
+
 struct AssistantView: View {
     @Query(sort: \Milestone.ageMonth) private var milestones: [Milestone]
     @Environment(ChildProfile.self) private var childProfile

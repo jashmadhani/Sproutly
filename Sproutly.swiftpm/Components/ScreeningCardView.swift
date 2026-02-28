@@ -12,15 +12,14 @@ struct ScreeningCardView: View {
     let correctedAge: Int
     let nightMode: Bool
     
-    /// Currently active screening checkpoints (within window)
+
     private var activeScreenings: [ScreeningCheckpoint] {
         ScreeningCheckpoint.allCheckpoints.filter { cp in
             correctedAge >= cp.ageMonth && correctedAge <= cp.ageMonth + 4
         }
     }
     
-    /// Overdue screenings the parent may have missed (past the active window
-    /// but within 8 months so still worth mentioning at next visit)
+
     private var overdueScreenings: [ScreeningCheckpoint] {
         ScreeningCheckpoint.allCheckpoints.filter { cp in
             correctedAge > cp.ageMonth + 4 && correctedAge <= cp.ageMonth + 8

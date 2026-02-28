@@ -7,9 +7,7 @@
 
 import SwiftUI
 
-/// Educational content about the five developmental domains,
-/// surveillance vs screening, and why early identification matters.
-/// Accessible from the Reflect tab.
+
 struct EducationView: View {
     let nightMode: Bool
     

@@ -24,14 +24,10 @@ let package = Package(
             appIcon: .placeholder(icon: .leaf),
             accentColor: .presetColor(.mint),
             supportedDeviceFamilies: [
-                .pad,
                 .phone
             ],
             supportedInterfaceOrientations: [
-                .portrait,
-                .landscapeRight,
-                .landscapeLeft,
-                .portraitUpsideDown(.when(deviceFamilies: [.pad]))
+                .portrait
             ],
             appCategory: .healthAndFitness
         )

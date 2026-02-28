@@ -7,16 +7,12 @@
 
 import SwiftData
 
-/// Seeds the database with NCBI-aligned developmental milestones across
-/// five domains (Gross Motor, Fine Motor, Language, Cognitive, Social-Emotional)
-/// and eight age windows (6mo–5yr). Based on CDC/AAP developmental guidelines.
+
 struct DataSeeder {
 
     // MARK: - All Milestones (used by PreviewMocks)
 
-    /// The complete flat array of all 80 milestone definitions.
-    /// Exposed so PreviewMocks can insert them directly into an
-    /// in-memory container without going through seedIfNeeded.
+
     static var allMilestones: [Milestone] {
         sixMonth + nineMonth + twelveMonth + eighteenMonth
             + twentyFourMonth + thirtySixMonth + fortyEightMonth + sixtyMonth
@@ -29,7 +25,6 @@ struct DataSeeder {
         let descriptor = FetchDescriptor<Milestone>()
         let existingCount = (try? modelContext.fetchCount(descriptor)) ?? 0
 
-        // Total milestones = 80 (10 per age window × 8 windows).
         guard existingCount < 80 else { return }
 
         // Delete any partial data first
@@ -92,7 +87,7 @@ struct DataSeeder {
         Milestone(title: "Makes different sounds like 'mamamama'", category: "Language", ageMonth: 9,
                   tips: "Those repeated syllables are building blocks of words. They're getting closer every day."),
         Milestone(title: "Watches the path of something as it falls", category: "Cognitive", ageMonth: 9,
-                  tips: "Tracking falling objects shows understanding of the physical world. Fascinating mind at work."),
+                  tips: "Tracking falling objects shows early physics intuition."),
         Milestone(title: "Looks for things they see you hide", category: "Cognitive", ageMonth: 9,
                   tips: "Try hiding a toy under a blanket. Watching them find it is genuinely fun."),
         Milestone(title: "Shows stranger anxiety", category: "Social-Emotional", ageMonth: 9,

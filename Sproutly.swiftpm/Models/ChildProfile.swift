@@ -9,8 +9,7 @@ import SwiftUI
 
 // MARK: - Child Profile
 
-/// Stores information about the child being tracked.
-/// Uses Swift's Observation framework for reactive updates.
+
 @Observable
 final class ChildProfile {
     
@@ -52,7 +51,7 @@ final class ChildProfile {
         return max(0, components.weekOfYear ?? 0)
     }
     
-    /// Corrected age for premature infants.
+    // accounts for prematurity using 4.33 weeks/month
     func calculateCorrectedAge() -> Int {
         guard isPremature else {
             return chronologicalAgeMonths
@@ -62,7 +61,7 @@ final class ChildProfile {
         return max(0, chronologicalAgeMonths - missingMonths)
     }
     
-    /// Static, human-readable age — months and weeks only, no live seconds.
+
     var humanReadableAge: String {
         let calendar = Calendar.current
         let components = calendar.dateComponents([.month, .weekOfMonth], from: birthDate, to: Date())

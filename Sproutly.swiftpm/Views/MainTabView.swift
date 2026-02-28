@@ -8,8 +8,7 @@
 import SwiftUI
 import SwiftData
 
-/// Main tab navigation with a floating warm dock.
-/// Uses .safeAreaInset(edge: .bottom) so content never hides behind the dock.
+
 struct MainTabView: View {
     @Environment(ThemeManager.self) private var theme
     @State private var selectedTab: Tab = .dashboard

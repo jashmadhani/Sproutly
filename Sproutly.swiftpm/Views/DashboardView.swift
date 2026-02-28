@@ -19,7 +19,7 @@ struct ScrollOffsetKey: PreferenceKey {
 
 // MARK: - Dashboard View
 
-/// Main summary screen showing progress, domains, moments, and guidance.
+
 struct DashboardView: View {
     @Query(sort: \Milestone.ageMonth) private var milestones: [Milestone]
     @Environment(\.modelContext) private var modelContext

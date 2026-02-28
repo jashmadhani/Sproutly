@@ -10,8 +10,7 @@ import SwiftData
 
 // MARK: - Milestone Model
 
-/// Represents a developmental milestone aligned with NCBI developmental staging.
-/// Each milestone belongs to one of five domains and has an expected age in months.
+
 @Model
 final class Milestone: Identifiable {
     
@@ -20,19 +19,19 @@ final class Milestone: Identifiable {
     var id: UUID
     var title: String
     
-    /// Domain: "Gross Motor", "Fine Motor", "Language", "Cognitive", "Social-Emotional"
+
     var category: String
     
-    /// Expected age in months (6, 9, 12, 18, 24, 36, 48, 60)
+
     var ageMonth: Int
     
     var isCompleted: Bool
     var dateCompleted: Date?
     
-    /// Warm, encouraging tip for parents
+
     var tips: String
     
-    /// Optional short memory note added when marking complete
+
     var completionNote: String
     
     // MARK: - Initializer
@@ -77,7 +76,7 @@ final class Milestone: Identifiable {
     }
 }
 
-// MARK: - Milestone Category (5 NCBI-Aligned Domains)
+// MARK: - Milestone Category
 
 enum MilestoneCategory: String, CaseIterable {
     case grossMotor = "Gross Motor"
@@ -116,8 +115,7 @@ enum MilestoneCategory: String, CaseIterable {
         }
     }
     
-    /// Language milestones weighted 1.2x in focus scoring per NCBI guidance
-    /// (language delays are most predictive of cognitive/literacy outcomes).
+    // language weighted 1.2x in focus scoring
     var focusWeight: Double {
         switch self {
         case .language: return 1.2
