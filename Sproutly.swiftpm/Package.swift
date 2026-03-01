@@ -24,14 +24,10 @@ let package = Package(
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.mint),
             supportedDeviceFamilies: [
-                .pad,
                 .phone
             ],
             supportedInterfaceOrientations: [
-                .portrait,
-                .landscapeRight,
-                .landscapeLeft,
-                .portraitUpsideDown(.when(deviceFamilies: [.pad]))
+                .portrait
             ],
             appCategory: .healthcareFitness
         )
@@ -42,5 +38,5 @@ let package = Package(
             path: "."
         )
     ],
-    swiftLanguageVersions: [.version("6")]
+    swiftLanguageModes: [.version("6")]
 )

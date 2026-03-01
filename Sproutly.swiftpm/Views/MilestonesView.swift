@@ -29,6 +29,8 @@ struct MilestonesView: View {
     @State private var expandedDomains: Set<String> = Set(MilestoneCategory.allCases.map(\.rawValue))
     @State private var milestoneForNote: Milestone? = nil
     @State private var noteText: String = ""
+    @State private var milestoneToUncheck: Milestone? = nil
+    @State private var showRemoveAlert: Bool = false
 
     // MARK: - Derived Data
 
@@ -81,15 +83,16 @@ struct MilestonesView: View {
                 .presentationDragIndicator(.visible)
                 .presentationBackground(theme.isNightMode ? Theme.nightCard : Color.white)
         }
-        .alert("Remove Milestone?", isPresented: $milestoneToUncheck) { milestone in
-            Button("Cancel", role: .cancel) { }
+        .alert("Remove Milestone?", isPresented: $showRemoveAlert, presenting: milestoneToUncheck) { milestone in
+            Button("Cancel", role: .cancel) { milestoneToUncheck = nil }
             Button("Remove", role: .destructive) {
                 milestone.isCompleted = false
                 milestone.dateCompleted = nil
                 milestone.completionNote = ""
                 saveContext()
+                milestoneToUncheck = nil
             }
-        } actions: { _ in
+        } message: { _ in
             Text("This will delete your saved memory.")
         }
     }
@@ -260,7 +263,8 @@ struct MilestonesView: View {
                     Text(milestone.completionNote)
                         .font(.caption2)
                         .foregroundStyle(theme.textSecondary.opacity(0.8))
-                        .lineLimit(1)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
                         .italic()
                 }
             }
@@ -397,13 +401,16 @@ struct MilestonesView: View {
     // marking → show note sheet, unmarking → toggle immediately
     private func handleToggle(_ milestone: Milestone) {
         if milestone.isCompleted {
-            // Uncompleting — toggle immediately, clear note
-            milestone.isCompleted = false
-            milestone.dateCompleted = nil
-            milestone.completionNote = ""
-            saveContext()
+            if !milestone.completionNote.isEmpty {
+                milestoneToUncheck = milestone
+                showRemoveAlert = true
+            } else {
+                milestone.isCompleted = false
+                milestone.dateCompleted = nil
+                milestone.completionNote = ""
+                saveContext()
+            }
         } else {
-            // Completing — show note sheet (don't toggle yet)
             milestoneForNote = milestone
         }
     }
