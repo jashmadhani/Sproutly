@@ -137,8 +137,6 @@ struct DevelopmentFocusView: View {
             return "A few earlier milestones are still developing. This is very common \u{2014} every child grows at their own pace. Continue observing through everyday play and routines."
         case .needsAttention:
             return "Some milestones are missing or delayed. It’s important to talk with your child’s doctor to understand next steps — and how you can help."
-        default:
-            return ""
         }
     }
 
