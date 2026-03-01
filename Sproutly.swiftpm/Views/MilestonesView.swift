@@ -81,6 +81,17 @@ struct MilestonesView: View {
                 .presentationDragIndicator(.visible)
                 .presentationBackground(theme.isNightMode ? Theme.nightCard : Color.white)
         }
+        .alert("Remove Milestone?", isPresented: $milestoneToUncheck) { milestone in
+            Button("Cancel", role: .cancel) { }
+            Button("Remove", role: .destructive) {
+                milestone.isCompleted = false
+                milestone.dateCompleted = nil
+                milestone.completionNote = ""
+                saveContext()
+            }
+        } actions: { _ in
+            Text("This will delete your saved memory.")
+        }
     }
 
     // MARK: - Header
