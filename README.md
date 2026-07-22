@@ -29,6 +29,26 @@ Sproutly isn't a scorecard. It's a **companion for attentive parents** — desig
 
 ---
 
+## 📸 Screenshots
+
+<p align="center">
+  <img src="screenshots/onboarding_welcome.png" width="180" alt="Onboarding Welcome"/>
+  &nbsp;&nbsp;
+  <img src="screenshots/onboarding_profile.png" width="180" alt="Profile Setup"/>
+  &nbsp;&nbsp;
+  <img src="screenshots/milestones.png" width="180" alt="Milestone Tracker"/>
+  &nbsp;&nbsp;
+  <img src="screenshots/assistant.png" width="180" alt="Support Assistant"/>
+  &nbsp;&nbsp;
+  <img src="screenshots/settings_dark.png" width="180" alt="Settings — Night Mode"/>
+</p>
+
+<p align="center">
+  <sub>Onboarding · Profile Setup · Milestones · Assistant · Night Mode</sub>
+</p>
+
+---
+
 ## 📱 App Pages
 
 ### 🟢 1. Onboarding Flow
