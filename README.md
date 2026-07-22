@@ -29,31 +29,17 @@ Sproutly isn't a scorecard. It's a **companion for attentive parents** — desig
 
 ---
 
-## 📸 Screenshots
-
-<p align="center">
-  <img src="screenshots/onboarding_welcome.png" width="180" alt="Onboarding Welcome"/>
-  &nbsp;&nbsp;
-  <img src="screenshots/onboarding_profile.png" width="180" alt="Profile Setup"/>
-  &nbsp;&nbsp;
-  <img src="screenshots/milestones.png" width="180" alt="Milestone Tracker"/>
-  &nbsp;&nbsp;
-  <img src="screenshots/assistant.png" width="180" alt="Support Assistant"/>
-  &nbsp;&nbsp;
-  <img src="screenshots/settings_dark.png" width="180" alt="Settings — Night Mode"/>
-</p>
-
-<p align="center">
-  <sub>Onboarding · Profile Setup · Milestones · Assistant · Night Mode</sub>
-</p>
-
----
-
 ## 📱 App Pages
 
 ### 🟢 1. Onboarding Flow
 
 A five-step guided introduction that sets the tone for the entire experience.
+
+<p align="center">
+  <img src="screenshots/onboarding_welcome.png" width="280" alt="Onboarding — Welcome"/>
+  &nbsp;&nbsp;&nbsp;
+  <img src="screenshots/onboarding_profile.png" width="280" alt="Onboarding — Profile Setup"/>
+</p>
 
 | Step | Title | Purpose |
 |:----:|-------|---------|
@@ -74,44 +60,9 @@ A five-step guided introduction that sets the tone for the entire experience.
 
 The central hub — everything a parent needs at a glance.
 
-```
-┌──────────────────────────────────┐
-│  👋 Good morning                 │
-│  Liam                            │
-│  You're 6 months, 2 weeks old!   │
-├──────────────────────────────────┤
-│        ┌─────────┐               │
-│        │   12    │  ← Progress   │
-│        │  of 18  │     Ring      │
-│        │mileston.│               │
-│        └─────────┘               │
-│     6-month milestones           │
-├──────────────────────────────────┤
-│  ⚠️ Development Focus           │
-│  (shown only when needed)        │
-├──────────────────────────────────┤
-│  🧩 Growth Domains (Bento Grid) │
-│  ┌────────┐  ┌────────┐         │
-│  │Movement│  │ Hands  │         │
-│  │  5/7   │  │  3/5   │         │
-│  │━━━━━▒▒▒│  │━━━▒▒▒▒▒│         │
-│  └────────┘  └────────┘         │
-│  ┌────────┐  ┌────────┐         │
-│  │Language│  │Thinking│         │
-│  │  4/6   │  │  2/4   │         │
-│  └────────┘  └────────┘         │
-├──────────────────────────────────┤
-│  🕐 Recent Moments              │
-│  ✓ First steps — Jan 15         │
-│  ✓ Said "mama" — Jan 12         │
-├──────────────────────────────────┤
-│  📋 Screening Reminders         │
-│  (AAP-recommended checkpoints)   │
-├──────────────────────────────────┤
-│  💡 Growth Insights             │
-│  (Expandable educational cards)  │
-└──────────────────────────────────┘
-```
+<p align="center">
+  <img src="screenshots/dashboard.png" width="280" alt="Dashboard"/>
+</p>
 
 **Features on this page:**
 - **Greeting Header** — Time-aware greeting with the child's name and human-readable age
@@ -128,6 +79,10 @@ The central hub — everything a parent needs at a glance.
 
 The full milestone tracker — browse, filter, and log developmental moments.
 
+<p align="center">
+  <img src="screenshots/milestones.png" width="280" alt="Milestones"/>
+</p>
+
 | Feature | Description |
 |---------|-------------|
 | **Segmented Filter** | Switch between `This Stage`, `All`, and `Completed` views |
@@ -143,6 +98,10 @@ The full milestone tracker — browse, filter, and log developmental moments.
 ### 🤖 4. Assistant
 
 A built-in, **rule-based support assistant** that answers parenting questions — entirely offline, with no network calls.
+
+<p align="center">
+  <img src="screenshots/assistant.png" width="280" alt="Support Assistant"/>
+</p>
 
 **How it works:**
 1. Parent types a question (e.g., *"My child isn't walking yet"*)
@@ -162,6 +121,10 @@ A built-in, **rule-based support assistant** that answers parenting questions �
 ### ⚙️ 5. Settings
 
 Personalization and data management.
+
+<p align="center">
+  <img src="screenshots/settings_dark.png" width="280" alt="Settings — Night Mode"/>
+</p>
 
 | Section | Controls |
 |---------|----------|
