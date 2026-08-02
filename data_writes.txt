@@ -1,0 +1,132 @@
+README.md-  <img src="https://img.shields.io/badge/Swift-6.0-F05138?style=for-the-badge&logo=swift&logoColor=white" alt="Swift 6"/>
+README.md-  <img src="https://img.shields.io/badge/SwiftUI-%E2%9C%93-blue?style=for-the-badge&logo=swift&logoColor=white" alt="SwiftUI"/>
+README.md:  <img src="https://img.shields.io/badge/SwiftData-%E2%9C%93-green?style=for-the-badge&logo=swift&logoColor=white" alt="SwiftData"/>
+README.md-</p>
+README.md-
+--
+README.md-```
+README.md-Sproutly.swiftpm/
+README.md:├── MyApp.swift                  # App entry point, SwiftData container setup
+README.md-├── Theme.swift                  # Dual-palette design system & view modifiers
+README.md-├── ThemeManager.swift           # Observable night mode state
+--
+README.md-├── Models/
+README.md-│   ├── ChildProfile.swift       # @Observable profile with corrected age logic
+README.md:│   └── Milestone.swift          # @Model (SwiftData) with categories & timing
+README.md-│
+README.md-├── ViewModels/
+--
+README.md-|-------|-----------|
+README.md-| **UI** | SwiftUI (declarative, cross-platform ready) |
+README.md:| **Data** | SwiftData with `@Model` and `@Query` |
+README.md-| **State** | `@Observable` (Swift Observation framework) |
+README.md:| **Persistence** | SwiftData (SQLite) + UserDefaults (profile) |
+README.md-| **Architecture** | MVVM with domain-specific evaluators |
+README.md-| **Concurrency** | Swift 6 strict concurrency (`@MainActor`) |
+--
+Sproutly.swiftpm/DataSeeder.swift-//
+Sproutly.swiftpm/DataSeeder.swift-
+Sproutly.swiftpm/DataSeeder.swift:import SwiftData
+Sproutly.swiftpm/DataSeeder.swift-
+Sproutly.swiftpm/DataSeeder.swift-
+--
+Sproutly.swiftpm/Models/ChildProfile.swift-            "hasCompletedOnboarding": hasCompletedOnboarding
+Sproutly.swiftpm/Models/ChildProfile.swift-        ]
+Sproutly.swiftpm/Models/ChildProfile.swift:        UserDefaults.standard.set(data, forKey: Self.saveKey)
+Sproutly.swiftpm/Models/ChildProfile.swift-    }
+Sproutly.swiftpm/Models/ChildProfile.swift-    
+Sproutly.swiftpm/Models/ChildProfile.swift-    static func load() -> ChildProfile {
+Sproutly.swiftpm/Models/ChildProfile.swift-        // Migration: check if data exists under new key
+Sproutly.swiftpm/Models/ChildProfile.swift:        if let data = UserDefaults.standard.dictionary(forKey: saveKey) {
+Sproutly.swiftpm/Models/ChildProfile.swift-            return ChildProfile(
+Sproutly.swiftpm/Models/ChildProfile.swift-                name: data["name"] as? String ?? "",
+--
+Sproutly.swiftpm/Models/ChildProfile.swift-        
+Sproutly.swiftpm/Models/ChildProfile.swift-        // Migration: check old legacy key (EliteGrowth was the app's previous name)
+Sproutly.swiftpm/Models/ChildProfile.swift:        if let legacyData = UserDefaults.standard.dictionary(forKey: "elitegrowth_profile") {
+Sproutly.swiftpm/Models/ChildProfile.swift-            // Copy data to new key
+Sproutly.swiftpm/Models/ChildProfile.swift:            UserDefaults.standard.set(legacyData, forKey: saveKey)
+Sproutly.swiftpm/Models/ChildProfile.swift-            // Delete legacy key permanently
+Sproutly.swiftpm/Models/ChildProfile.swift:            UserDefaults.standard.removeObject(forKey: "elitegrowth_profile")
+Sproutly.swiftpm/Models/ChildProfile.swift-            
+Sproutly.swiftpm/Models/ChildProfile.swift-            return ChildProfile(
+--
+Sproutly.swiftpm/Models/ChildProfile.swift-        gestationalWeeks = 40
+Sproutly.swiftpm/Models/ChildProfile.swift-        hasCompletedOnboarding = false
+Sproutly.swiftpm/Models/ChildProfile.swift:        UserDefaults.standard.removeObject(forKey: Self.saveKey)
+Sproutly.swiftpm/Models/ChildProfile.swift-    }
+Sproutly.swiftpm/Models/ChildProfile.swift-}
+--
+Sproutly.swiftpm/Models/Milestone.swift-
+Sproutly.swiftpm/Models/Milestone.swift-import SwiftUI
+Sproutly.swiftpm/Models/Milestone.swift:import SwiftData
+Sproutly.swiftpm/Models/Milestone.swift-
+Sproutly.swiftpm/Models/Milestone.swift-// MARK: - Milestone Model
+Sproutly.swiftpm/Models/Milestone.swift-
+Sproutly.swiftpm/Models/Milestone.swift-
+Sproutly.swiftpm/Models/Milestone.swift:@Model
+Sproutly.swiftpm/Models/Milestone.swift-final class Milestone: Identifiable {
+Sproutly.swiftpm/Models/Milestone.swift-    
+--
+Sproutly.swiftpm/MyApp.swift-
+Sproutly.swiftpm/MyApp.swift-import SwiftUI
+Sproutly.swiftpm/MyApp.swift:import SwiftData
+Sproutly.swiftpm/MyApp.swift-
+Sproutly.swiftpm/MyApp.swift-// MARK: - Shared Container
+--
+Sproutly.swiftpm/PreviewMocks.swift:import SwiftData
+Sproutly.swiftpm/PreviewMocks.swift-import SwiftUI
+Sproutly.swiftpm/PreviewMocks.swift-
+--
+Sproutly.swiftpm/ThemeManager.swift-    var isNightMode: Bool {
+Sproutly.swiftpm/ThemeManager.swift-        didSet {
+Sproutly.swiftpm/ThemeManager.swift:            UserDefaults.standard.set(isNightMode, forKey: "nightModeEnabled")
+Sproutly.swiftpm/ThemeManager.swift-        }
+Sproutly.swiftpm/ThemeManager.swift-    }
+Sproutly.swiftpm/ThemeManager.swift-    
+Sproutly.swiftpm/ThemeManager.swift-    init() {
+Sproutly.swiftpm/ThemeManager.swift:        self.isNightMode = UserDefaults.standard.bool(forKey: "nightModeEnabled")
+Sproutly.swiftpm/ThemeManager.swift-    }
+Sproutly.swiftpm/ThemeManager.swift-    
+--
+Sproutly.swiftpm/Views/AssistantView.swift-
+Sproutly.swiftpm/Views/AssistantView.swift-import SwiftUI
+Sproutly.swiftpm/Views/AssistantView.swift:import SwiftData
+Sproutly.swiftpm/Views/AssistantView.swift-
+Sproutly.swiftpm/Views/AssistantView.swift-
+--
+Sproutly.swiftpm/Views/DashboardView.swift-
+Sproutly.swiftpm/Views/DashboardView.swift-import SwiftUI
+Sproutly.swiftpm/Views/DashboardView.swift:import SwiftData
+Sproutly.swiftpm/Views/DashboardView.swift-
+Sproutly.swiftpm/Views/DashboardView.swift-// MARK: - Scroll Offset Tracking
+--
+Sproutly.swiftpm/Views/MainTabView.swift-
+Sproutly.swiftpm/Views/MainTabView.swift-import SwiftUI
+Sproutly.swiftpm/Views/MainTabView.swift:import SwiftData
+Sproutly.swiftpm/Views/MainTabView.swift-
+Sproutly.swiftpm/Views/MainTabView.swift-
+--
+Sproutly.swiftpm/Views/MilestonesView.swift-
+Sproutly.swiftpm/Views/MilestonesView.swift-import SwiftUI
+Sproutly.swiftpm/Views/MilestonesView.swift:import SwiftData
+Sproutly.swiftpm/Views/MilestonesView.swift-
+Sproutly.swiftpm/Views/MilestonesView.swift-// MARK: - Filter Mode
+--
+Sproutly.swiftpm/Views/OnboardingView.swift-
+Sproutly.swiftpm/Views/OnboardingView.swift-import SwiftUI
+Sproutly.swiftpm/Views/OnboardingView.swift:import SwiftData
+Sproutly.swiftpm/Views/OnboardingView.swift-
+Sproutly.swiftpm/Views/OnboardingView.swift-/// Four-step onboarding flow: Welcome → How It Works → Reassurance → Profile.
+--
+Sproutly.swiftpm/Views/SettingsView.swift-
+Sproutly.swiftpm/Views/SettingsView.swift-import SwiftUI
+Sproutly.swiftpm/Views/SettingsView.swift:import SwiftData
+Sproutly.swiftpm/Views/SettingsView.swift-
+Sproutly.swiftpm/Views/SettingsView.swift-
+--
+Sproutly.swiftpm/Views/SupportAssistantView.swift-
+Sproutly.swiftpm/Views/SupportAssistantView.swift-import SwiftUI
+Sproutly.swiftpm/Views/SupportAssistantView.swift:import SwiftData
+Sproutly.swiftpm/Views/SupportAssistantView.swift-
+Sproutly.swiftpm/Views/SupportAssistantView.swift-// rule-based, no network calls

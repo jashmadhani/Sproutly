@@ -70,7 +70,7 @@ The central hub — everything a parent needs at a glance.
 - **Development Focus Card** — Appears only when earlier milestones are incomplete; uses calm, non-alarming language
 - **Growth Domains Grid** — Bento-style grid with per-domain progress bars for all 5 developmental domains
 - **Recent Moments** — Chronological feed of recently completed milestones with dates and optional memory notes
-- **Screening Reminders** — AAP-recommended screening checkpoints at 9, 18, 24, and 30 months (with overdue detection)
+- **Screening Reminders** — Pediatric-recommended screening checkpoints at 9 and 30 months (with overdue detection)
 - **Growth Insights** — Collapsible educational cards covering the five domains, surveillance vs screening, early intervention, and when to consult a pediatrician
 
 ---
@@ -159,22 +159,20 @@ Corrected Age = Chronological Age − (40 − Gestational Weeks) ÷ 4.33
 
 This ensures milestones are evaluated fairly, with gentle messaging throughout (*"Milestones will be gently adjusted"*).
 
-### 🔔 AAP Screening Reminders
+### 🔔 Pediatric Screening Reminders
 
 Proactive cards appear on the dashboard at recommended screening ages:
 
 | Age | Screening Type |
 |-----|---------------|
 | 9 months | Developmental check-in |
-| 18 months | Developmental + Autism screening |
-| 24 months | Autism screening |
 | 30 months | Developmental check-in |
 
 Cards transition from **active** to **past due** with adjusted visual treatment and softer messaging.
 
 ### 🔍 Development Focus System
 
-When earlier milestones remain incomplete, a **Development Evaluator** calculates per-domain completion ratios and flags areas needing attention:
+When earlier milestones remain incomplete, a **Development Observer** calculates per-domain completion ratios and flags areas needing attention:
 
 | Ratio | Status | Tone |
 |-------|--------|------|
@@ -241,7 +239,7 @@ Sproutly.swiftpm/
 │   └── DashboardViewModel.swift # Computed stats, greeting text, domain analysis
 │
 ├── Managers/
-│   └── DevelopmentEvaluator.swift  # Per-domain scoring & status classification
+│   └── DevelopmentObserver.swift  # Per-domain scoring & status classification
 │
 ├── Views/
 │   ├── MainTabView.swift        # Floating dock navigation (4 tabs)
@@ -253,12 +251,12 @@ Sproutly.swiftpm/
 │   ├── SettingsView.swift       # Profile, theme, data management
 │   ├── DevelopmentFocusView.swift  # Flagged milestone cards
 │   ├── GrowthInsightsView.swift # Educational collapsible content
-│   └── EducationView.swift      # Understanding Growth section
+
 │
 ├── Components/
 │   ├── MilestoneRingView.swift  # Animated progress ring
 │   ├── OneTapLogButton.swift    # Haptic toggle button for milestones
-│   └── ScreeningCardView.swift  # AAP screening reminder cards
+│   └── ScreeningCardView.swift  # Pediatric screening reminder cards
 │
 └── Resources/
     └── Assets.xcassets/         # App icon & asset catalog
@@ -272,7 +270,7 @@ Sproutly.swiftpm/
 | **Data** | SwiftData with `@Model` and `@Query` |
 | **State** | `@Observable` (Swift Observation framework) |
 | **Persistence** | SwiftData (SQLite) + UserDefaults (profile) |
-| **Architecture** | MVVM with domain-specific evaluators |
+| **Architecture** | MVVM with domain-specific observers |
 | **Concurrency** | Swift 6 strict concurrency (`@MainActor`) |
 | **Min Deployment** | iOS 17.0 · macOS 14.0 |
 

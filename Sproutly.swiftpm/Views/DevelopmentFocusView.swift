@@ -237,7 +237,7 @@ struct DevelopmentFocusView: View {
             )
             interventionPoint(
                 icon: "stethoscope",
-                text: "The AAP recommends developmental screening at 9, 18, and 24 or 30 months. Your pediatrician can administer these during routine well-child visits."
+                text: "The AAP recommends developmental screening at 9 and 30 months. Your pediatrician can administer these during routine well-child visits."
             )
             interventionPoint(
                 icon: "figure.2.and.child.holdinghands",

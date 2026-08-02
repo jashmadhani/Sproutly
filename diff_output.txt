@@ -1,0 +1,456 @@
+diff --git a/README.md b/README.md
+index 113c401..6a5b391 100644
+--- a/README.md
++++ b/README.md
+@@ -70,7 +70,7 @@ The central hub — everything a parent needs at a glance.
+ - **Development Focus Card** — Appears only when earlier milestones are incomplete; uses calm, non-alarming language
+ - **Growth Domains Grid** — Bento-style grid with per-domain progress bars for all 5 developmental domains
+ - **Recent Moments** — Chronological feed of recently completed milestones with dates and optional memory notes
+-- **Screening Reminders** — AAP-recommended screening checkpoints at 9, 18, 24, and 30 months (with overdue detection)
++- **Screening Reminders** — Pediatric-recommended screening checkpoints at 9, 24, and 30 months (with overdue detection)
+ - **Growth Insights** — Collapsible educational cards covering the five domains, surveillance vs screening, early intervention, and when to consult a pediatrician
+ 
+ ---
+@@ -159,14 +159,13 @@ Corrected Age = Chronological Age − (40 − Gestational Weeks) ÷ 4.33
+ 
+ This ensures milestones are evaluated fairly, with gentle messaging throughout (*"Milestones will be gently adjusted"*).
+ 
+-### 🔔 AAP Screening Reminders
++### 🔔 Pediatric Screening Reminders
+ 
+ Proactive cards appear on the dashboard at recommended screening ages:
+ 
+ | Age | Screening Type |
+ |-----|---------------|
+ | 9 months | Developmental check-in |
+-| 18 months | Developmental + Autism screening |
+ | 24 months | Autism screening |
+ | 30 months | Developmental check-in |
+ 
+@@ -241,7 +240,7 @@ Sproutly.swiftpm/
+ │   └── DashboardViewModel.swift # Computed stats, greeting text, domain analysis
+ │
+ ├── Managers/
+-│   └── DevelopmentEvaluator.swift  # Per-domain scoring & status classification
++│   └── DevelopmentObserver.swift  # Per-domain scoring & status classification
+ │
+ ├── Views/
+ │   ├── MainTabView.swift        # Floating dock navigation (4 tabs)
+@@ -258,7 +257,7 @@ Sproutly.swiftpm/
+ ├── Components/
+ │   ├── MilestoneRingView.swift  # Animated progress ring
+ │   ├── OneTapLogButton.swift    # Haptic toggle button for milestones
+-│   └── ScreeningCardView.swift  # AAP screening reminder cards
++│   └── ScreeningCardView.swift  # Pediatric screening reminder cards
+ │
+ └── Resources/
+     └── Assets.xcassets/         # App icon & asset catalog
+diff --git a/Sproutly.swiftpm/Components/ScreeningCardView.swift b/Sproutly.swiftpm/Components/ScreeningCardView.swift
+index 533fe03..eba92e8 100644
+--- a/Sproutly.swiftpm/Components/ScreeningCardView.swift
++++ b/Sproutly.swiftpm/Components/ScreeningCardView.swift
+@@ -110,13 +110,6 @@ struct ScreeningCheckpoint: Identifiable {
+             icon: "clipboard.fill",
+             isAutismScreening: false
+         ),
+-        ScreeningCheckpoint(
+-            ageMonth: 18,
+-            title: "18-Month Developmental & Autism Screening",
+-            body: "The AAP recommends both a developmental screening and an autism screening around 18 months. These brief, standardized tools help ensure your child is getting everything they need. Early identification leads to better outcomes — and screening is simply good care.",
+-            icon: "list.clipboard.fill",
+-            isAutismScreening: true
+-        ),
+         ScreeningCheckpoint(
+             ageMonth: 24,
+             title: "24-Month Autism Screening",
+diff --git a/Sproutly.swiftpm/Managers/DevelopmentEvaluator.swift b/Sproutly.swiftpm/Managers/DevelopmentEvaluator.swift
+deleted file mode 100644
+index 2aedc87..0000000
+--- a/Sproutly.swiftpm/Managers/DevelopmentEvaluator.swift
++++ /dev/null
+@@ -1,141 +0,0 @@
+-//
+-//  DevelopmentEvaluator.swift
+-//  Sproutly
+-//
+-//  Created by Jash Madhani on 23/02/26.
+-//
+-
+-import SwiftUI
+-
+-// MARK: - Domain Status
+-
+-
+-enum DomainStatus: String, CaseIterable {
+-    case onTrack       = "On Track"
+-    case emerging      = "Emerging"
+-    case needsSupport  = "Needs Support"
+-    case worthDiscussing = "Worth Discussing"
+-    
+-    var icon: String {
+-        switch self {
+-        case .onTrack:        return "checkmark.circle.fill"
+-        case .emerging:       return "leaf.fill"
+-        case .needsSupport:   return "heart.circle.fill"
+-        case .worthDiscussing: return "message.circle.fill"
+-        }
+-    }
+-    
+-
+-    func color(for nightMode: Bool) -> Color {
+-        switch self {
+-        case .onTrack:        return Theme.growthGreen(for: nightMode)
+-        case .emerging:       return Theme.accentBlue(for: nightMode)
+-        case .needsSupport:   return Theme.encourageYellow(for: nightMode)
+-        case .worthDiscussing: return Theme.cognitiveColor(for: nightMode)
+-        }
+-    }
+-    
+-
+-    var supportiveMessage: String {
+-        switch self {
+-        case .onTrack:        return "Growing beautifully"
+-        case .emerging:       return "Growth unfolds at its own pace"
+-        case .needsSupport:   return "A little extra encouragement helps"
+-        case .worthDiscussing: return "Consider discussing at your next visit"
+-        }
+-    }
+-}
+-
+-// MARK: - Domain Evaluation Result
+-
+-
+-struct DomainEvaluation: Identifiable {
+-    let id = UUID()
+-    let category: MilestoneCategory
+-    let completed: Int
+-    let total: Int
+-    let ratio: Double
+-    let status: DomainStatus
+-}
+-
+-// MARK: - Development Evaluator
+-
+-// centralized so dashboard and milestones stay in sync
+-struct DevelopmentEvaluator {
+-    
+-
+-    static func evaluate(
+-        milestones: [Milestone],
+-        correctedAge: Int
+-    ) -> [DomainEvaluation] {
+-        MilestoneCategory.allCases.map { category in
+-            evaluateDomain(
+-                category: category,
+-                milestones: milestones,
+-                correctedAge: correctedAge
+-            )
+-        }
+-    }
+-    
+-    // MARK: - Private
+-    
+-    private static func evaluateDomain(
+-        category: MilestoneCategory,
+-        milestones: [Milestone],
+-        correctedAge: Int
+-    ) -> DomainEvaluation {
+-        // milestones up to current age
+-        let relevant = milestones.filter {
+-            $0.category == category.rawValue && $0.ageMonth <= correctedAge
+-        }
+-        
+-        let total = relevant.count
+-        let completed = relevant.filter(\.isCompleted).count
+-        
+-
+-        let ratio = total > 0 ? Double(completed) / Double(total) : 1.0
+-        
+-        let status = classifyStatus(
+-            ratio: ratio,
+-            total: total,
+-            correctedAge: correctedAge,
+-            category: category
+-        )
+-        
+-        return DomainEvaluation(
+-            category: category,
+-            completed: completed,
+-            total: total,
+-            ratio: ratio,
+-            status: status
+-        )
+-    }
+-    
+-    // ≥0.75 on track, 0.5–0.74 emerging, 0.3–0.49 needs support, <0.3 worth discussing
+-    private static func classifyStatus(
+-        ratio: Double,
+-        total: Int,
+-        correctedAge: Int,
+-        category: MilestoneCategory
+-    ) -> DomainStatus {
+-        // No milestones expected yet → on track by default
+-        guard total > 0 else { return .onTrack }
+-        
+-        // language gets 1.2× weight so it's slightly more sensitive
+-        let adjustedRatio = ratio / category.focusWeight
+-
+-        let effectiveRatio = min(adjustedRatio, 1.0)
+-        
+-        switch effectiveRatio {
+-        case 0.75...1.0:
+-            return .onTrack
+-        case 0.50..<0.75:
+-            return .emerging
+-        case 0.30..<0.50:
+-            return .needsSupport
+-        default:
+-            // only suggest discussing if ≥9 months
+-            return correctedAge >= 9 ? .worthDiscussing : .needsSupport
+-        }
+-    }
+-}
+diff --git a/Sproutly.swiftpm/Models/ChildProfile.swift b/Sproutly.swiftpm/Models/ChildProfile.swift
+index 344f886..790bbca 100644
+--- a/Sproutly.swiftpm/Models/ChildProfile.swift
++++ b/Sproutly.swiftpm/Models/ChildProfile.swift
+@@ -119,18 +119,35 @@ final class ChildProfile {
+     }
+     
+     static func load() -> ChildProfile {
+-        let data = UserDefaults.standard.dictionary(forKey: saveKey)
+-            ?? UserDefaults.standard.dictionary(forKey: "elitegrowth_profile")
++        // Migration: check if data exists under new key
++        if let data = UserDefaults.standard.dictionary(forKey: saveKey) {
++            return ChildProfile(
++                name: data["name"] as? String ?? "",
++                birthDate: Date(timeIntervalSince1970: data["birthDate"] as? Double ?? Date().timeIntervalSince1970),
++                isPremature: data["isPremature"] as? Bool ?? false,
++                gestationalWeeks: data["gestationalWeeks"] as? Int ?? 40,
++                hasCompletedOnboarding: data["hasCompletedOnboarding"] as? Bool ?? false
++            )
++        }
+         
+-        guard let data = data else { return ChildProfile() }
++        // Migration: check old legacy key (EliteGrowth was the app's previous name)
++        if let legacyData = UserDefaults.standard.dictionary(forKey: "elitegrowth_profile") {
++            // Copy data to new key
++            UserDefaults.standard.set(legacyData, forKey: saveKey)
++            // Delete legacy key permanently
++            UserDefaults.standard.removeObject(forKey: "elitegrowth_profile")
++            
++            return ChildProfile(
++                name: legacyData["name"] as? String ?? "",
++                birthDate: Date(timeIntervalSince1970: legacyData["birthDate"] as? Double ?? Date().timeIntervalSince1970),
++                isPremature: legacyData["isPremature"] as? Bool ?? false,
++                gestationalWeeks: legacyData["gestationalWeeks"] as? Int ?? 40,
++                hasCompletedOnboarding: legacyData["hasCompletedOnboarding"] as? Bool ?? false
++            )
++        }
+         
+-        return ChildProfile(
+-            name: data["name"] as? String ?? "",
+-            birthDate: Date(timeIntervalSince1970: data["birthDate"] as? Double ?? Date().timeIntervalSince1970),
+-            isPremature: data["isPremature"] as? Bool ?? false,
+-            gestationalWeeks: data["gestationalWeeks"] as? Int ?? 40,
+-            hasCompletedOnboarding: data["hasCompletedOnboarding"] as? Bool ?? false
+-        )
++        // No data found, fresh install
++        return ChildProfile()
+     }
+     
+     func reset() {
+@@ -140,6 +157,5 @@ final class ChildProfile {
+         gestationalWeeks = 40
+         hasCompletedOnboarding = false
+         UserDefaults.standard.removeObject(forKey: Self.saveKey)
+-        UserDefaults.standard.removeObject(forKey: "elitegrowth_profile")
+     }
+ }
+diff --git a/Sproutly.swiftpm/MyApp.swift b/Sproutly.swiftpm/MyApp.swift
+index ded81f9..3484d89 100644
+--- a/Sproutly.swiftpm/MyApp.swift
++++ b/Sproutly.swiftpm/MyApp.swift
+@@ -14,9 +14,9 @@ import SwiftData
+ @MainActor
+ let sharedAppContainer: ModelContainer = {
+     do {
+-        let schema = Schema([Milestone.self])
+-        let config = ModelConfiguration("SproutlyDB", isStoredInMemoryOnly: false)
+-        let container = try ModelContainer(for: schema, configurations: [config])
++        let schema = Schema(versionedSchema: SproutlySchemaV1.self)
++        let config = ModelConfiguration("SproutlyDB", schema: schema, isStoredInMemoryOnly: false)
++        let container = try ModelContainer(for: schema, migrationPlan: SproutlyMigrationPlan.self, configurations: [config])
+ 
+         DataSeeder.seedIfNeeded(modelContext: container.mainContext)
+ 
+diff --git a/Sproutly.swiftpm/Views/OnboardingView.swift b/Sproutly.swiftpm/Views/OnboardingView.swift
+index d59b9b2..ed29b3d 100644
+--- a/Sproutly.swiftpm/Views/OnboardingView.swift
++++ b/Sproutly.swiftpm/Views/OnboardingView.swift
+@@ -24,7 +24,7 @@ struct OnboardingView: View {
+ 
+     @FocusState private var isNameFieldFocused: Bool
+ 
+-    private let totalSteps = 5
++    private let totalSteps = 4
+ 
+     var body: some View {
+         ZStack {
+@@ -42,8 +42,6 @@ struct OnboardingView: View {
+                         howItWorksStep
+                     } else if step == 2 {
+                         reassuranceStep
+-                    } else if step == 3 {
+-                        disclaimerStep
+                     } else {
+                         profileStep
+                     }
+@@ -202,56 +200,7 @@ private extension OnboardingView {
+         .scrollBounceBehavior(.basedOnSize)
+     }
+ 
+-    // Step 4: Medical Disclaimer
+-    var disclaimerStep: some View {
+-        ScrollView {
+-            VStack(spacing: 24) {
+-                Spacer(minLength: 40)
+-
+-                ZStack {
+-                    Circle()
+-                        .fill(theme.blue.opacity(0.12))
+-                        .frame(width: 120, height: 120)
+-
+-                    Image(systemName: "info.circle.fill")
+-                        .font(.system(size: 55))
+-                        .foregroundStyle(theme.blue)
+-                }
+-
+-                Text("Important Notice")
+-                    .font(.system(.title, design: .rounded))
+-                    .fontWeight(.bold)
+-                    .foregroundStyle(theme.text)
+-
+-                VStack(spacing: 16) {
+-                    Text("Sproutly is an educational tool for tracking your child's developmental milestones.")
+-                        .font(.body)
+-                        .multilineTextAlignment(.center)
+-                        .foregroundStyle(theme.text)
+-                        .lineSpacing(4)
+-
+-                    Text("It is not a substitute for professional medical advice, diagnosis, or treatment.")
+-                        .font(.body)
+-                        .multilineTextAlignment(.center)
+-                        .foregroundStyle(theme.text)
+-                        .lineSpacing(4)
+-
+-                    Text("Always seek the advice of your pediatrician with any questions about your child's development.")
+-                        .font(.body)
+-                        .multilineTextAlignment(.center)
+-                        .foregroundStyle(theme.textSecondary)
+-                        .lineSpacing(4)
+-                }
+-                .padding(.horizontal, 20)
+-
+-                Spacer(minLength: 40)
+-            }
+-            .padding()
+-        }
+-        .scrollBounceBehavior(.basedOnSize)
+-    }
+-
+-    // Step 5: Quick Profile Setup
++    // Step 4: Quick Profile Setup
+     var profileStep: some View {
+         ScrollView {
+             VStack(spacing: 20) {
+diff --git a/Sproutly.swiftpm/Views/SettingsView.swift b/Sproutly.swiftpm/Views/SettingsView.swift
+index 304354c..469b40f 100644
+--- a/Sproutly.swiftpm/Views/SettingsView.swift
++++ b/Sproutly.swiftpm/Views/SettingsView.swift
+@@ -16,6 +16,7 @@ struct SettingsView: View {
+     
+     @State private var showResetAlert = false
+     @State private var showDeleteAlert = false
++    @State private var showAboutData = false
+     @State private var scrollOffset: CGFloat = 0
+     
+     private var isCompactHeader: Bool { scrollOffset < -10 }
+@@ -30,6 +31,7 @@ struct SettingsView: View {
+                     nightModeCard
+                     profileSection
+                     prematuritySection
++                    aboutSection
+                     dataSection
+                 }
+                 .padding(.horizontal, 20)
+@@ -85,6 +87,9 @@ struct SettingsView: View {
+         } message: {
+             Text("This will remove all data and return to the welcome screen.")
+         }
++        .sheet(isPresented: $showAboutData) {
++            AboutDataView()
++        }
+     }
+     
+     // MARK: - Header
+@@ -238,6 +243,28 @@ struct SettingsView: View {
+         .animation(.spring(response: 0.4), value: childProfile.isPremature)
+     }
+     
++    // MARK: - About
++    
++    private var aboutSection: some View {
++        Button {
++            showAboutData = true
++        } label: {
++            HStack(spacing: 12) {
++                Image(systemName: "info.circle")
++                    .foregroundStyle(theme.textSecondary)
++                Text("About the Data")
++                    .font(.subheadline)
++                    .foregroundStyle(theme.text)
++                Spacer()
++                Image(systemName: "chevron.right")
++                    .font(.caption.weight(.semibold))
++                    .foregroundStyle(theme.textSecondary.opacity(0.5))
++            }
++        }
++        .buttonStyle(.plain)
++        .warmCard(nightMode: theme.isNightMode)
++    }
++    
+     // MARK: - Data Management
+     
+     private var dataSection: some View {
+@@ -291,6 +318,9 @@ struct SettingsView: View {
+     }
+     
+     private func deleteAllData() {
++        // Roll back to light mode (default mode)
++        theme.isNightMode = false
++        
+         // Delete all milestones
+         let descriptor = FetchDescriptor<Milestone>()
+         if let allMilestones = try? modelContext.fetch(descriptor) {
+diff --git a/Sproutly.swiftpm/Views/SupportAssistantView.swift b/Sproutly.swiftpm/Views/SupportAssistantView.swift
+index 5292cde..d303f98 100644
+--- a/Sproutly.swiftpm/Views/SupportAssistantView.swift
++++ b/Sproutly.swiftpm/Views/SupportAssistantView.swift
+@@ -167,14 +167,14 @@ struct AssistantResponse {
+ 
+ 
+ enum ConcernIntensity {
+-    case none        // No concern-modifiers detected
++    case none        // No concern-modifiers observed
+     case mild        // 1 concern-modifier
+     case significant // 2+ concern-modifiers — always show pediatric note
+ }
+ 
+ // MARK: - Weighted Domain Scorer
+ 
+-// weighted keyword scoring to detect the relevant domain
++// weighted keyword scoring to identify the relevant domain
+ struct WeightedDomainScorer {
+     
+     static let keywords: [(String, MilestoneCategory, Int)] = [

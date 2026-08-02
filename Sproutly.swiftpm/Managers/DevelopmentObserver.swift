@@ -1,5 +1,5 @@
 //
-//  DevelopmentEvaluator.swift
+//  DevelopmentObserver.swift
 //  Sproutly
 //
 //  Created by Jash Madhani on 23/02/26.
@@ -46,10 +46,10 @@ enum DomainStatus: String, CaseIterable {
     }
 }
 
-// MARK: - Domain Evaluation Result
+// MARK: - Domain Observation
 
 
-struct DomainEvaluation: Identifiable {
+struct DomainObservation: Identifiable {
     let id = UUID()
     let category: MilestoneCategory
     let completed: Int
@@ -58,18 +58,18 @@ struct DomainEvaluation: Identifiable {
     let status: DomainStatus
 }
 
-// MARK: - Development Evaluator
+// MARK: - Development Observer
 
 // centralized so dashboard and milestones stay in sync
-struct DevelopmentEvaluator {
+struct DevelopmentObserver {
     
 
-    static func evaluate(
+    static func observe(
         milestones: [Milestone],
         correctedAge: Int
-    ) -> [DomainEvaluation] {
+    ) -> [DomainObservation] {
         MilestoneCategory.allCases.map { category in
-            evaluateDomain(
+            observeDomain(
                 category: category,
                 milestones: milestones,
                 correctedAge: correctedAge
@@ -79,11 +79,11 @@ struct DevelopmentEvaluator {
     
     // MARK: - Private
     
-    private static func evaluateDomain(
+    private static func observeDomain(
         category: MilestoneCategory,
         milestones: [Milestone],
         correctedAge: Int
-    ) -> DomainEvaluation {
+    ) -> DomainObservation {
         // milestones up to current age
         let relevant = milestones.filter {
             $0.category == category.rawValue && $0.ageMonth <= correctedAge
@@ -102,7 +102,7 @@ struct DevelopmentEvaluator {
             category: category
         )
         
-        return DomainEvaluation(
+        return DomainObservation(
             category: category,
             completed: completed,
             total: total,

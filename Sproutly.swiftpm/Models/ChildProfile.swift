@@ -119,18 +119,35 @@ final class ChildProfile {
     }
     
     static func load() -> ChildProfile {
-        let data = UserDefaults.standard.dictionary(forKey: saveKey)
-            ?? UserDefaults.standard.dictionary(forKey: "elitegrowth_profile")
+        // Migration: check if data exists under new key
+        if let data = UserDefaults.standard.dictionary(forKey: saveKey) {
+            return ChildProfile(
+                name: data["name"] as? String ?? "",
+                birthDate: Date(timeIntervalSince1970: data["birthDate"] as? Double ?? Date().timeIntervalSince1970),
+                isPremature: data["isPremature"] as? Bool ?? false,
+                gestationalWeeks: data["gestationalWeeks"] as? Int ?? 40,
+                hasCompletedOnboarding: data["hasCompletedOnboarding"] as? Bool ?? false
+            )
+        }
         
-        guard let data = data else { return ChildProfile() }
+        // Migration: check old legacy key (EliteGrowth was the app's previous name)
+        if let legacyData = UserDefaults.standard.dictionary(forKey: "elitegrowth_profile") {
+            // Copy data to new key
+            UserDefaults.standard.set(legacyData, forKey: saveKey)
+            // Delete legacy key permanently
+            UserDefaults.standard.removeObject(forKey: "elitegrowth_profile")
+            
+            return ChildProfile(
+                name: legacyData["name"] as? String ?? "",
+                birthDate: Date(timeIntervalSince1970: legacyData["birthDate"] as? Double ?? Date().timeIntervalSince1970),
+                isPremature: legacyData["isPremature"] as? Bool ?? false,
+                gestationalWeeks: legacyData["gestationalWeeks"] as? Int ?? 40,
+                hasCompletedOnboarding: legacyData["hasCompletedOnboarding"] as? Bool ?? false
+            )
+        }
         
-        return ChildProfile(
-            name: data["name"] as? String ?? "",
-            birthDate: Date(timeIntervalSince1970: data["birthDate"] as? Double ?? Date().timeIntervalSince1970),
-            isPremature: data["isPremature"] as? Bool ?? false,
-            gestationalWeeks: data["gestationalWeeks"] as? Int ?? 40,
-            hasCompletedOnboarding: data["hasCompletedOnboarding"] as? Bool ?? false
-        )
+        // No data found, fresh install
+        return ChildProfile()
     }
     
     func reset() {
@@ -140,6 +157,5 @@ final class ChildProfile {
         gestationalWeeks = 40
         hasCompletedOnboarding = false
         UserDefaults.standard.removeObject(forKey: Self.saveKey)
-        UserDefaults.standard.removeObject(forKey: "elitegrowth_profile")
     }
 }

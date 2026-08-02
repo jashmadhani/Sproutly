@@ -100,36 +100,19 @@ struct ScreeningCheckpoint: Identifiable {
     let title: String
     let body: String
     let icon: String
-    let isAutismScreening: Bool
     
     static let allCheckpoints: [ScreeningCheckpoint] = [
         ScreeningCheckpoint(
             ageMonth: 9,
             title: "9-Month Developmental Check-In",
             body: "Around this age, the AAP recommends a brief developmental check-in with your pediatrician. These visits help celebrate progress and catch anything early — when support makes the biggest difference.",
-            icon: "clipboard.fill",
-            isAutismScreening: false
-        ),
-        ScreeningCheckpoint(
-            ageMonth: 18,
-            title: "18-Month Developmental & Autism Screening",
-            body: "The AAP recommends both a developmental screening and an autism screening around 18 months. These brief, standardized tools help ensure your child is getting everything they need. Early identification leads to better outcomes — and screening is simply good care.",
-            icon: "list.clipboard.fill",
-            isAutismScreening: true
-        ),
-        ScreeningCheckpoint(
-            ageMonth: 24,
-            title: "24-Month Autism Screening",
-            body: "A follow-up autism screening is recommended around 24 months. This is a routine part of well-child visits and helps identify children who might benefit from early support. Most children screened are developing typically — it's simply a careful, caring check.",
-            icon: "list.clipboard.fill",
-            isAutismScreening: true
+            icon: "clipboard.fill"
         ),
         ScreeningCheckpoint(
             ageMonth: 30,
             title: "30-Month Developmental Check-In",
             body: "Another developmental check-in helps track your child's beautiful growth. These visits are a wonderful opportunity to discuss any questions and celebrate milestones together with your pediatrician.",
-            icon: "clipboard.fill",
-            isAutismScreening: false
+            icon: "clipboard.fill"
         ),
     ]
 }

@@ -16,6 +16,7 @@ struct SettingsView: View {
     
     @State private var showResetAlert = false
     @State private var showDeleteAlert = false
+    @State private var showAboutData = false
     @State private var scrollOffset: CGFloat = 0
     
     private var isCompactHeader: Bool { scrollOffset < -10 }
@@ -30,6 +31,7 @@ struct SettingsView: View {
                     nightModeCard
                     profileSection
                     prematuritySection
+                    aboutSection
                     dataSection
                 }
                 .padding(.horizontal, 20)
@@ -84,6 +86,9 @@ struct SettingsView: View {
             Button("Delete", role: .destructive) { deleteAllData() }
         } message: {
             Text("This will remove all data and return to the welcome screen.")
+        }
+        .sheet(isPresented: $showAboutData) {
+            AboutDataView()
         }
     }
     
@@ -238,6 +243,28 @@ struct SettingsView: View {
         .animation(.spring(response: 0.4), value: childProfile.isPremature)
     }
     
+    // MARK: - About
+    
+    private var aboutSection: some View {
+        Button {
+            showAboutData = true
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "info.circle")
+                    .foregroundStyle(theme.textSecondary)
+                Text("About the Data")
+                    .font(.subheadline)
+                    .foregroundStyle(theme.text)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(theme.textSecondary.opacity(0.5))
+            }
+        }
+        .buttonStyle(.plain)
+        .warmCard(nightMode: theme.isNightMode)
+    }
+    
     // MARK: - Data Management
     
     private var dataSection: some View {
@@ -291,6 +318,9 @@ struct SettingsView: View {
     }
     
     private func deleteAllData() {
+        // Roll back to light mode (default mode)
+        theme.isNightMode = false
+        
         // Delete all milestones
         let descriptor = FetchDescriptor<Milestone>()
         if let allMilestones = try? modelContext.fetch(descriptor) {

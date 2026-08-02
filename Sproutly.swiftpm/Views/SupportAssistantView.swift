@@ -167,14 +167,14 @@ struct AssistantResponse {
 
 
 enum ConcernIntensity {
-    case none        // No concern-modifiers detected
+    case none        // No concern-modifiers observed
     case mild        // 1 concern-modifier
     case significant // 2+ concern-modifiers — always show pediatric note
 }
 
 // MARK: - Weighted Domain Scorer
 
-// weighted keyword scoring to detect the relevant domain
+// weighted keyword scoring to identify the relevant domain
 struct WeightedDomainScorer {
     
     static let keywords: [(String, MilestoneCategory, Int)] = [

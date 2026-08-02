@@ -14,9 +14,9 @@ import SwiftData
 @MainActor
 let sharedAppContainer: ModelContainer = {
     do {
-        let schema = Schema([Milestone.self])
-        let config = ModelConfiguration("SproutlyDB", isStoredInMemoryOnly: false)
-        let container = try ModelContainer(for: schema, configurations: [config])
+        let schema = Schema(versionedSchema: SproutlySchemaV1.self)
+        let config = ModelConfiguration("SproutlyDB", schema: schema, isStoredInMemoryOnly: false)
+        let container = try ModelContainer(for: schema, migrationPlan: SproutlyMigrationPlan.self, configurations: [config])
 
         DataSeeder.seedIfNeeded(modelContext: container.mainContext)
 
