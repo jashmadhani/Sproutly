@@ -94,7 +94,7 @@ You'll need to add the privacy policy URL in **App Store Connect** during submis
 #### App Information
 - **Name**: Sproutly
 - **Subtitle**: Gentle Milestone Tracking
-- **Category**: Healthcare & Fitness (Primary)
+- **Category**: Lifestyle (Primary)
 - **Age Rating**: 4+
 
 #### Description (Example - avoid diagnostic language)

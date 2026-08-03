@@ -29,7 +29,7 @@ let package = Package(
             supportedInterfaceOrientations: [
                 .portrait
             ],
-            appCategory: .healthcareFitness
+            appCategory: .lifestyle
         )
     ],
     targets: [
