@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-/// Four-step onboarding flow: Welcome → How It Works → Reassurance → Profile.
+/// Five-step onboarding flow: Welcome → How It Works → Reassurance → Disclaimer → Profile.
 struct OnboardingView: View {
     @Environment(ChildProfile.self) private var childProfile
     @Environment(ThemeManager.self) private var theme
@@ -24,7 +24,7 @@ struct OnboardingView: View {
 
     @FocusState private var isNameFieldFocused: Bool
 
-    private let totalSteps = 4
+    private let totalSteps = 5
 
     var body: some View {
         ZStack {
@@ -42,6 +42,8 @@ struct OnboardingView: View {
                         howItWorksStep
                     } else if step == 2 {
                         reassuranceStep
+                    } else if step == 3 {
+                        disclaimerStep
                     } else {
                         profileStep
                     }
@@ -200,7 +202,56 @@ private extension OnboardingView {
         .scrollBounceBehavior(.basedOnSize)
     }
 
-    // Step 4: Quick Profile Setup
+    // Step 4: Medical Disclaimer
+    var disclaimerStep: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                Spacer(minLength: 40)
+
+                ZStack {
+                    Circle()
+                        .fill(theme.blue.opacity(0.12))
+                        .frame(width: 120, height: 120)
+
+                    Image(systemName: "info.circle.fill")
+                        .font(.system(size: 55))
+                        .foregroundStyle(theme.blue)
+                }
+
+                Text("Important Notice")
+                    .font(.system(.title, design: .rounded))
+                    .fontWeight(.bold)
+                    .foregroundStyle(theme.text)
+
+                VStack(spacing: 16) {
+                    Text("Sproutly is an educational tool for tracking your child's developmental milestones.")
+                        .font(.body)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(theme.text)
+                        .lineSpacing(4)
+
+                    Text("It is not a substitute for professional medical advice, diagnosis, or treatment.")
+                        .font(.body)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(theme.text)
+                        .lineSpacing(4)
+
+                    Text("Always seek the advice of your pediatrician with any questions about your child's development.")
+                        .font(.body)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(theme.textSecondary)
+                        .lineSpacing(4)
+                }
+                .padding(.horizontal, 20)
+
+                Spacer(minLength: 40)
+            }
+            .padding()
+        }
+        .scrollBounceBehavior(.basedOnSize)
+    }
+
+    // Step 5: Quick Profile Setup
     var profileStep: some View {
         ScrollView {
             VStack(spacing: 20) {
