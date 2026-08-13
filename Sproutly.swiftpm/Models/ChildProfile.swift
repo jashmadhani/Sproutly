@@ -47,8 +47,8 @@ final class ChildProfile {
     
     var chronologicalAgeWeeks: Int {
         let calendar = Calendar.current
-        let components = calendar.dateComponents([.weekOfYear], from: birthDate, to: Date())
-        return max(0, components.weekOfYear ?? 0)
+        let days = calendar.dateComponents([.day], from: birthDate, to: Date()).day ?? 0
+        return max(0, days / 7)
     }
     
     // accounts for prematurity using 4.33 weeks/month
@@ -64,9 +64,10 @@ final class ChildProfile {
 
     var humanReadableAge: String {
         let calendar = Calendar.current
-        let components = calendar.dateComponents([.month, .weekOfMonth], from: birthDate, to: Date())
-        let months = max(0, components.month ?? 0)
-        let weeks = max(0, components.weekOfMonth ?? 0)
+        let months = chronologicalAgeMonths
+        let monthAnchor = calendar.date(byAdding: .month, value: months, to: birthDate) ?? birthDate
+        let remainingDays = calendar.dateComponents([.day], from: monthAnchor, to: Date()).day ?? 0
+        let weeks = max(0, remainingDays / 7)
         
         if months == 0 && weeks == 0 {
             return "Just beginning this journey"

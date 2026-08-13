@@ -26,9 +26,8 @@ final class DashboardViewModel {
     private(set) var domainConcerns: [DomainConcern] = []
     private(set) var greetingText: String = "Good Morning"
 
-    // skip if nothing changed
-    private var lastMilestoneCount: Int = -1
-    private var lastCompletedCount: Int = -1
+    // skip only when all inputs that affect derived state are unchanged
+    private var lastMilestoneSignature: Int?
     private var lastCorrectedAge: Int = -1
 
     // MARK: - Update
@@ -36,14 +35,20 @@ final class DashboardViewModel {
     // refreshes derived state, skips if inputs unchanged
     func update(milestones: [Milestone], childProfile: ChildProfile) {
         let age = max(0, childProfile.calculateCorrectedAge())
-        let completed = milestones.filter(\.isCompleted).count
+        var hasher = Hasher()
+        for milestone in milestones {
+            hasher.combine(milestone.id)
+            hasher.combine(milestone.title)
+            hasher.combine(milestone.category)
+            hasher.combine(milestone.ageMonth)
+            hasher.combine(milestone.isCompleted)
+            hasher.combine(milestone.dateCompleted)
+        }
+        let milestoneSignature = hasher.finalize()
 
-        guard milestones.count != lastMilestoneCount
-           || completed != lastCompletedCount
-           || age != lastCorrectedAge else { return }
+        guard milestoneSignature != lastMilestoneSignature || age != lastCorrectedAge else { return }
 
-        lastMilestoneCount = milestones.count
-        lastCompletedCount = completed
+        lastMilestoneSignature = milestoneSignature
         lastCorrectedAge = age
 
         correctedAge = age

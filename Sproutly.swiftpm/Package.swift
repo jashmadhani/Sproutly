@@ -35,7 +35,13 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "AppModule",
-            path: "."
+            path: ".",
+            exclude: ["Tests"]
+        ),
+        .testTarget(
+            name: "SproutlyTests",
+            dependencies: ["AppModule"],
+            path: "Tests"
         )
     ],
     swiftLanguageModes: [.version("6")]
